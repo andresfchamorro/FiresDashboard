@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: black;
+  stroke-width: 0.5;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font-family: sans-serif;
+  font-size: 11px;
+}
+
+path.selected{
+  fill:darkgray;
+}
+
+#info{
+  position:absolute;
+  width:100px;
+  height:auto;
+  padding:10px;
+  background-color:transparent;
+  border-radius:10px;
+  box-shadow: 4px 4px 10px rgba(0,0,0,0.1);
+}
+
+#info.hidden{
+  display:none;
+}
+
+#info p{
+  margin:0px;
+  font-family:sans-serif;
+  font-size:12px;
+}
+
+#chartDiv rect{
+  fill:darkred;
+}
+
+</style>
+<body>
+  <script src="//d3js.org/d3.v3.min.js"></script>
+  <script src="//d3js.org/topojson.v1.min.js"></script>
+
+<div id="info" class="hidden">
+<p id="district">District</p>
+</div>
+
+<div id="mapDiv"></div>
+<div id="chartDiv"></div>
+
+<script>
+
+  var width = 600;
+  var height = 300;
+  var margins = {top: 10, right: 10, bottom: 40, left: 60};
+  var chartwidth = width - margins.left - margins.right;
+  var chartheight = height - margins.top - margins.bottom;
+  var padding = 20;
+  var years = [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015];
+
+  var svgChartArea = d3.select("#chartDiv")
+                  .append("svg")
+                  .attr("width", width)
+                  .attr("height", height);
+
+  var chart = svgChartArea.append("g").
+          attr("transform","translate("+margins.left + "," + margins.top + ")");
+
+  var mockdata = [750,1025,930,730,600,900,200,100,1000,200,450,499,600,300,1000];
+  var dataset = mockdata;
+
+  var xScale = d3.scale.ordinal()
+                .domain(d3.range(2001,2016))
+                .rangeRoundBands([0,chartwidth],0.2);
+
+  var yScale = d3.scale.linear()
+                .domain([0, d3.max(dataset)])
+                .range([chartheight, 0]);
+
+  //Define X axis
+  var xAxis = d3.svg.axis()
+          .scale(xScale)
+          .orient("bottom")
+          .ticks(15);
+
+  var yAxis = d3.svg.axis()
+          .scale(yScale)
+          .orient("left");
+
+  var createTrendChart = function(){
+
+    chart.selectAll("rect")
+      .data(dataset)
+      .enter()
+      .append("rect");
+
+    chart.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + (chartheight) + ")")
+        .call(xAxis);
+
+    chart.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+  }
+
+  var updateTrendChart = function(selected_data){
+
+//    var test = d3.values(selected_data); I'm sure there is a better way
+    console.log(selected_data);
+    dataset = [selected_data.properties.F2001,selected_data.properties.F2002,selected_data.properties.F2003,selected_data.properties.F2004,selected_data.properties.F2005,selected_data.properties.F2006,selected_data.properties.F2007,selected_data.properties.F2008,selected_data.properties.F2008,selected_data.properties.F2010,selected_data.properties.F2011,selected_data.properties.F2012,selected_data.properties.F2013,selected_data.properties.F2014,selected_data.properties.F2015];
+
+    yScale.domain([0, d3.max(dataset)])
+
+    chart.selectAll("rect")
+      .data(dataset)
+      .transition()
+      .duration(1000)
+      .attr("x", function(d, i){
+        return xScale(2001+i);
+      })
+      .attr("y", function(d){
+        return yScale(d);
+      })
+      .attr("width", xScale.rangeBand())
+      .attr("height", function(d){
+        return chartheight - yScale(d);
+      });
+
+    //Update Y axis
+    chart.select(".y.axis")
+        .transition()
+        .duration(1000)
+      .call(yAxis);
+
+  };
+
+
+//Load topojson and create map
+  var createMap = function(parent){
+
+  var map_w = 960,
+      map_h = 300;
+
+  var projection = d3.geo.mercator().scale(950).translate([-1550,110]);
+
+  var path = d3.geo.path()
+    .projection(projection);
+
+  var svg = d3.select(parent).append("svg").attr({width:map_w, height:map_h});
+
+  d3.json("toposim-IndonesiaFires.json", function(json){
+    console.log(json);
+    svg.selectAll("path")
+      .data(topojson.feature(json, json.objects.IndonesiaFires).features)
+      .enter()
+      .append("path")
+      .attr("d", path)
+      .attr("fill", "lightgray")
+      .attr("stroke","black")
+      .attr("stroke-width", "0.1px")
+      .on("mouseover", function(d){
+        d3.select(this)
+          .classed("selected", true);
+
+        //create an info
+        var info = d3.select("#info");
+        info.select("#district").text(d.properties.NAME_1);
+        info.classed("hidden", false);
+
+        })
+      .on("mouseout", function(d){
+        d3.select(this)
+        .classed("selected", false);
+        })
+      .on("click", function(d){
+        updateTrendChart(d);
+        //createTrendChart(d);
+      });
+  });
+};
+
+createMap("#mapDiv");
+createTrendChart();
+
+
+</script>
