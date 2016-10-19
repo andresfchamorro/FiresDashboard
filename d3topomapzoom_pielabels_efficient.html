@@ -302,7 +302,7 @@ var createMap = function(){
           .call(zoom.translate(translate).scale(scale).event);
 
       //Change bar chart and also selected adm1 id
-      updateTrendChart(d);
+      trendChart.updateTrendChart(d);
       selected_id = d.properties.ID;
     }
     function reset() {
@@ -344,8 +344,10 @@ var createMap = function(){
         });
       }
 
-    return drawMap();
+    drawMap();
 };
+
+var createTrendChart = function(){
 
   //Trend chart variables
   var width = 700, height = 270;
@@ -377,8 +379,7 @@ var createMap = function(){
           .orient("left");
 
   //Create bar chart
-  var createTrendChart = function(){
-
+  var drawChart = function(){
     chart.selectAll("rect")
       .data(dataset)
       .enter()
@@ -395,9 +396,9 @@ var createMap = function(){
     chart.append("g")
         .attr("class", "y axis")
         .call(yAxis);
-  }
+    }
 
-  var updateTrendChart = function(selected_data){
+  drawChart.updateTrendChart = function(selected_data){
     //var test = d3.values(selected_data); More efficient?
     console.log(selected_data);
     dataset = [selected_data.properties.F2001,selected_data.properties.F2002,selected_data.properties.F2003,selected_data.properties.F2004,selected_data.properties.F2005,selected_data.properties.F2006,selected_data.properties.F2007,selected_data.properties.F2008,selected_data.properties.F2008,selected_data.properties.F2010,selected_data.properties.F2011,selected_data.properties.F2012,selected_data.properties.F2013,selected_data.properties.F2014,selected_data.properties.F2015];
@@ -424,12 +425,10 @@ var createMap = function(){
         .transition()
         .duration(1000)
       .call(yAxis);
-  };
-
-
-
-
-
+    };
+  drawChart();
+  return drawChart;
+}
 
     //Tables and variables for pie charts
     var tables = [];
@@ -499,7 +498,7 @@ var formatInteger = d3.format("");
 
 loadTables();
 createMap();
-createTrendChart();
+var trendChart = createTrendChart();
 
 
 </script>
