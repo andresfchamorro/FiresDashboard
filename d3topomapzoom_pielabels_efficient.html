@@ -245,10 +245,14 @@ var createMap = function(){
       //Change bar chart and also selected adm1 id
       trendChart.updateTrendChart(d);
       selected_id = d.properties.ID;
+      if (selected_year) {
+        pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+        pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+      }
     }
     function reset() {
-      active.classed("active", false);
-      active = d3.select(null);
+      //active.classed("active", false);
+      //active = d3.select(null);
       svgMap.transition().duration(750)
           .call(zoom.translate([0, 0]).scale(1).event);
     }
@@ -328,8 +332,9 @@ var createTrendChart = function(){
       .on("mouseover", function(d,i){
         d3.selectAll("rect").classed("selected", false);
         d3.select(this).attr("class", "selected");
-        pies.updatePie(svgPie1,selected_id,i,"Protected","OutProtected");
-        pies.updatePie(svgPie2,selected_id,i,"Peat","OutPeat");
+        selected_year = i;
+        pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+        pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
       });
     chart.append("g")
         .attr("class", "x axis")
@@ -374,7 +379,7 @@ var createTrendChart = function(){
 
 //Tables and variables for pie charts
 var mockdataset = [0,50];
-var selected_id;
+var selected_id, selected_year;
 var pie_w = 200, pie_h = 200;
 var pie_margins = {top: 10, right: 10, bottom: 40, left: 10};
 var pie = d3.layout.pie().sort(null);
