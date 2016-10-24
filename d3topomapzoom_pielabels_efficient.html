@@ -94,6 +94,11 @@ path.selected{
   fill:darkred;
 }
 
+#barChart rect{
+  fill: gray;
+  stroke-width: 1.5px;
+}
+
 #mapDiv svg{
   border: 1px solid #DADEE5;
   border-style: dashed;
@@ -149,6 +154,9 @@ path.selected{
     </div>
     <div id="pieDiv2">
       <h3>Peat vs Non-Peat</h3>
+    </div>
+    <div id="barChart">
+      <h3>Fires in Concession Areas</h3>
     </div>
   </div>
 </div>
@@ -335,6 +343,7 @@ var createTrendChart = function(){
         selected_year = i;
         pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
         pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+        barChart.updateBarChart(selected_id, selected_year);
       });
     chart.append("g")
         .attr("class", "x axis")
@@ -347,9 +356,8 @@ var createTrendChart = function(){
 
   drawChart.updateTrendChart = function(selected_data){
     //var test = d3.values(selected_data); More efficient?
-    console.log(selected_data);
     dataset = [selected_data.properties.F2001,selected_data.properties.F2002,selected_data.properties.F2003,selected_data.properties.F2004,selected_data.properties.F2005,selected_data.properties.F2006,selected_data.properties.F2007,selected_data.properties.F2008,selected_data.properties.F2009,selected_data.properties.F2010,selected_data.properties.F2011,selected_data.properties.F2012,selected_data.properties.F2013,selected_data.properties.F2014,selected_data.properties.F2015];
-
+  
     yScale.domain([0, d3.max(dataset)])
 
     chart.selectAll("rect")
@@ -422,8 +430,7 @@ var createPies = function(){
    drawPie.updatePie = function(pie_object,adm_id,year_id,attr1,attr2) {
     var selectedTableYear = tables[year_id];
     var selectedRowAdm = selectedTableYear[adm_id-1];
-    var selectedAttributes = [selectedRowAdm[attr1], selectedRowAdm[attr2]];
-    console.log(selectedRowAdm, selectedTableYear);
+    var selectedAttributes = [+selectedRowAdm[attr1], +selectedRowAdm[attr2]];
     console.log(selectedAttributes);
 
     function arcTween(a) {
@@ -457,11 +464,94 @@ var createPies = function(){
 
 }
 
+var createBarChart = function(){
+
+  //Trend chart variables
+  var width = 300, height = 200;
+  var margins = {top: 10, right: 10, bottom: 20, left: 20};
+  var chartwidth = width - margins.left - margins.right;
+  var chartheight = height - margins.top - margins.bottom;
+  var x = [0,1,2,3];
+  var svgBarChartArea = d3.select("#barChart")
+                  .append("svg")
+                  .attr("width", width)
+                  .attr("height", height);
+  var barChart = svgBarChartArea.append("g")
+                .attr("transform","translate("+margins.left + "," + margins.top + ")");
+  var dataset = [50,30,10,100];
+  //Scales
+  var yScale = d3.scale.ordinal()
+                .domain(d3.range(0,4))
+                .rangeRoundBands([0,chartheight],0.6);
+  var xScale = d3.scale.linear()
+                .domain([0, d3.max(dataset)])
+                .range([0, chartwidth]);
+  //Define x,y axis
+  var xAxis = d3.svg.axis()
+          .scale(xScale)
+          .orient("bottom");
+  var yAxis = d3.svg.axis()
+          .scale(yScale)
+          .orient("left")
+
+  //Create bar chart
+  var drawChart = function(){
+    barChart.selectAll("rect")
+      .data(dataset)
+      .enter()
+      .append("rect")
+      .on("mouseover", function(d,i){
+
+      });
+
+    barChart.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + (chartheight) + ")")
+        .call(xAxis);
+    barChart.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+    };
+
+  drawChart.updateBarChart = function(adm_id, year_id){
+    var selectedTableYear = tables[year_id];
+    var selectedRowAdm = selectedTableYear[adm_id-1];
+    var selected_dataset = [+selectedRowAdm.Logging, +selectedRowAdm.OilPalm, +selectedRowAdm.WoodFiber, +selectedRowAdm.OutCon]
+    //var test = d3.values(selected_data); More efficient?
+    xScale.domain([0, d3.max(selected_dataset)]);
+    barChart.selectAll("rect")
+      .data(selected_dataset)
+      .transition()
+      .duration(1000)
+      .attr("x", function(d, i){
+        return xScale(0);
+      })
+      .attr("y", function(d,i){
+        return yScale(i);
+      })
+      .attr("width", function(d){
+          return xScale(d);
+        })
+      .attr("height", yScale.rangeBand());
+
+    //Update X axis
+    barChart.select(".x.axis")
+        .transition()
+        .duration(1000)
+        .call(xAxis);
+    };
+  drawChart();
+  return drawChart;
+}
+
+
+
 loadTables();
 console.log(tables);
 createMap();
 var trendChart = createTrendChart();
 var pies = createPies();
+var barChart = createBarChart();
 
 
 </script>
