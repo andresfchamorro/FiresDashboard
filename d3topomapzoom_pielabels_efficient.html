@@ -4,12 +4,12 @@
 
 @font-face {
     font-family: "Arial MT Std";
-    src: url(http://gfw2-data.s3.amazonaws.com/test/D3/ArialMTStd-LightCond.otf) format("opentype");
+    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-LightCond.otf) format("opentype");
     font-weight: normal;
 }
 @font-face {
     font-family: "Arial MT Std";
-    src: url(http://gfw2-data.s3.amazonaws.com/test/D3/ArialMTStd-BoldCond.otf) format("opentype");
+    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-BoldCond.otf) format("opentype");
     font-weight: bold;
 }
 body {
@@ -95,8 +95,6 @@ path.selected{
 }
 
 #barChart rect{
-  fill: gray;
-  stroke-width: 1.5px;
 }
 
 #mapDiv svg{
@@ -135,8 +133,8 @@ path.selected{
 
 </style>
 <body>
-  <script src="https://d3js.org/d3.v3.min.js"></script>
-  <script src="https://d3js.org/topojson.v1.min.js"></script>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://d3js.org/topojson.v1.min.js"></script>
 
 <div id="dashboard">
   <div id="left">
@@ -393,6 +391,7 @@ var pie_margins = {top: 10, right: 10, bottom: 40, left: 10};
 var pie = d3.layout.pie().sort(null);
 var color1 = ["#1B5E48","#B6BFBC"];
 var color2 = ["#1B50A6","#B6BFBC"];
+var color3 = ["#BFA2A7", "#ADBFA2", "#A2A3BF", "#B6BFBC"];
 var outerRadius = pie_w / 2;
 var innerRadius = 0;
 var arc = d3.svg.arc()
@@ -467,11 +466,10 @@ var createPies = function(){
 var createBarChart = function(){
 
   //Trend chart variables
-  var width = 300, height = 200;
-  var margins = {top: 10, right: 10, bottom: 20, left: 20};
+  var width = 400, height = 200;
+  var margins = {top: 10, right: 10, bottom: 20, left: 100};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
-  var x = [0,1,2,3];
   var svgBarChartArea = d3.select("#barChart")
                   .append("svg")
                   .attr("width", width)
@@ -479,9 +477,10 @@ var createBarChart = function(){
   var barChart = svgBarChartArea.append("g")
                 .attr("transform","translate("+margins.left + "," + margins.top + ")");
   var dataset = [50,30,10,100];
+  var categories = ["Logging","Oil Palm","Wood Fiber","Outside Concessions"]
   //Scales
   var yScale = d3.scale.ordinal()
-                .domain(d3.range(0,4))
+                .domain(categories)
                 .rangeRoundBands([0,chartheight],0.6);
   var xScale = d3.scale.linear()
                 .domain([0, d3.max(dataset)])
@@ -501,8 +500,10 @@ var createBarChart = function(){
       .enter()
       .append("rect")
       .on("mouseover", function(d,i){
-
-      });
+      })
+      .attr("fill", function(d, i) {
+        return color3[i];
+      });;
 
     barChart.append("g")
         .attr("class", "x axis")
@@ -527,7 +528,8 @@ var createBarChart = function(){
         return xScale(0);
       })
       .attr("y", function(d,i){
-        return yScale(i);
+        var x = categories[i];
+        return yScale(x);
       })
       .attr("width", function(d){
           return xScale(d);
