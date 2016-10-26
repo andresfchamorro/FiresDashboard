@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+@font-face {
+    font-family: "Arial MT Std";
+    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-LightCond.otf) format("opentype");
+    font-weight: normal;
+}
+@font-face {
+    font-family: "Arial MT Std";
+    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-BoldCond.otf) format("opentype");
+    font-weight: bold;
+}
+body {
+  font-family: "Arial MT Std", Helvetica, sans-serif, Arial;
+  position: relative;
+}
+h1{
+  margin-left: 10px;
+  margin-top: 5px;
+  margin-bottom:5px;
+  color: #3B3B3B;
+}
+
+#right svg {
+  display: block;
+  margin: auto;
+}
+h3{
+  display: block;
+  font-size: 16px;
+  margin: 0px;
+  font-weight: normal;
+  text-align: center;
+}
+.background {
+  fill: none;
+  pointer-events: all;
+}
+.feature {
+/*  fill: #E8E8E8;*/
+  fill: transparent;
+  cursor: pointer;
+  stroke: black;
+  stroke-width: 0.1;
+}
+.feature:hover{
+/*  fill: #BDBDBD;*/
+    stroke-width: 0.3;
+}
+.feature.active {
+/*  fill: #858585; */
+    stroke-width: 0.5;
+}
+.mesh {
+  fill: none;
+  stroke: #fff;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: darkgray;
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+.axis text {
+  font-size: 11px;
+}
+path.selected{
+  fill:darkgray;
+}
+
+#info{
+  position:absolute;
+  width:100px;
+  height:auto;
+  padding:10px;
+  background-color:transparent;
+  border-radius:10px;
+  box-shadow: 4px 4px 10px rgba(0,0,0,0.1);
+}
+#info.hidden{
+  display:none;
+}
+#info p{
+  margin:0px;
+  font-size:14px;
+}
+
+#chartDiv rect{
+  fill:#D68178;
+}
+#chartDiv rect.selected{
+  fill:darkred;
+}
+
+#barChart rect{
+}
+
+#mapDiv svg{
+  border: 1px solid #DADEE5;
+  border-style: dashed;
+  border-radius: 5px;
+}
+
+#pieDiv1 {
+  margin-top:10px;
+}
+#pieDiv1 path {
+  stroke: #fff;
+}
+#pieDiv1 text {
+	font-size: 10px;
+  fill:white;
+}
+#pieDiv2 path {
+  stroke: #fff;
+}
+#pieDiv2 text {
+	font-size: 10px;
+  fill:white;
+}
+#dashboard{
+  overflow: hidden;
+}
+#left{
+  width: 700px;
+  float:left;
+}
+#right{
+  overflow: hidden;
+}
+
+</style>
+<body>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://d3js.org/topojson.v1.min.js"></script>
+  <script src="http://d3js.org/d3-tile.v0.0.min.js"></script>
+
+<div id="dashboard">
+  <div id="left">
+    <h1>Fires Dashboard</h1>
+    <div id="mapDiv">
+      <div id="info" class="hidden">
+        <p id="district">District</p>
+      </div>
+    </div>
+    <div id="chartDiv"></div>
+  </div>
+  <div id="right">
+    <div id="pieDiv1">
+      <h3>Protected vs Non-Protected</h3>
+    </div>
+    <div id="pieDiv2">
+      <h3>Peat vs Non-Peat</h3>
+    </div>
+    <div id="barChart">
+      <h3>Fires in Concession Areas</h3>
+    </div>
+  </div>
+</div>
+
+<script>
+
+var tables = [];
+var loadTables = function(){
+  d3.csv("Tables/Adm1_2001.csv", function(error, data0) {
+      tables.push(data0);
+      d3.csv("Tables/Adm1_2002.csv", function(error, data1) {
+        tables.push(data1);
+        d3.csv("Tables/Adm1_2003.csv", function(error, data2) {
+          tables.push(data2);
+          d3.csv("Tables/Adm1_2004.csv", function(error, data3) {
+            tables.push(data3);
+            d3.csv("Tables/Adm1_2005.csv", function(error, data4) {
+              tables.push(data4);
+              d3.csv("Tables/Adm1_2006.csv", function(error, data5) {
+                tables.push(data5);
+                d3.csv("Tables/Adm1_2007.csv", function(error, data6) {
+                  tables.push(data6);
+                  d3.csv("Tables/Adm1_2008.csv", function(error, data7) {
+                    tables.push(data7);
+                    d3.csv("Tables/Adm1_2009.csv", function(error, data8) {
+                      tables.push(data8);
+                      d3.csv("Tables/Adm1_2010.csv", function(error, data9) {
+                        tables.push(data9);
+                        d3.csv("Tables/Adm1_2011.csv", function(error, data10) {
+                          tables.push(data10);
+                          d3.csv("Tables/Adm1_2012.csv", function(error, data11) {
+                            tables.push(data11);
+                            d3.csv("Tables/Adm1_2013.csv", function(error, data12) {
+                              tables.push(data12);
+                              d3.csv("Tables/Adm1_2014.csv", function(error, data13) {
+                                tables.push(data13);
+                                d3.csv("Tables/Adm1_2015.csv", function(error, data14) {
+                                  tables.push(data14);
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+}
+
+var createMap = function(){
+
+    //Map variables
+    var map_w = 700, map_h = 300;
+    var pi = Math.PI,
+        tau = 2 * pi;
+    var projection = d3.geo.mercator().scale(860).translate([-1420,110]);
+    var path = d3.geo.path().projection(projection);
+    var svgMap = d3.select("#mapDiv").append("svg").attr({width:map_w, height:map_h}).on("click", stopped, true);
+    //background to capture clicks
+    svgMap.append("rect")
+        .attr("class", "background")
+        .attr("width", map_w)
+        .attr("height", map_h)
+
+    var map = svgMap.append("g");
+    //Zoomed state
+    var active = d3.select("null");
+    var zoom = d3.behavior.zoom()
+      .translate([0, 0]).scale(1)
+      .scaleExtent([1, 8]).on("zoom", zoomed);
+    map.call(zoom).call(zoom.event);
+
+    //Map Zoom functions
+    function clicked(d) {
+      if (active.node() === this) return reset();
+      active.classed("active", false);
+      active = d3.select(this).classed("active", true);
+
+      var bounds = path.bounds(d),
+          dx = bounds[1][0] - bounds[0][0],
+          dy = bounds[1][1] - bounds[0][1],
+          x = (bounds[0][0] + bounds[1][0]) / 2,
+          y = (bounds[0][1] + bounds[1][1]) / 2,
+          scale = 2.3,          //replaced: scale = Math.max(1, Math.min(8, 0.9 / Math.max(dx / map_w, dy / map_h))),
+          translate = [map_w / 2 - scale * x, map_h / 2 - scale * y];
+
+      svgMap.transition().duration(750)
+          .call(zoom.translate(translate).scale(scale).event);
+
+      //Change bar chart and also selected adm1 id
+      trendChart.updateTrendChart(d);
+      selected_id = d.properties.ID;
+      if (selected_year) {
+        pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+        pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+        barChart.updateBarChart(selected_id, selected_year);
+      }
+    }
+    function reset() {
+      //active.classed("active", false);
+      //active = d3.select(null);
+      svgMap.transition().duration(750)
+          .call(zoom.translate([0, 0]).scale(1).event);
+    }
+    function zoomed() {
+      map.style("stroke-width", 1.5 / d3.event.scale + "px");
+      map.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    }
+    // If the drag behavior prevents the default click, also stop propagation so we don’t click-to-zoom.
+    function stopped() {
+      if (d3.event.defaultPrevented) d3.event.stopPropagation();
+    }
+
+      //Load topojson and create map
+      var drawMap = function(){
+
+      d3.json("toposim-IndonesiaFires.json", function(json){
+
+        var tiles = d3.tile()
+            .size([map_w, map_h])
+            .scale(projection.scale() * tau)
+            .translate(projection([0, 0]))
+            ();
+
+            map.selectAll("image")
+                .data(tiles)
+              .enter().append("image")
+                .attr("xlink:href", function(d) { return "http://52.200.102.67/osm_tiles/" + d[2] + "/" + d[0] + "/" + d[1] + ".png"; })
+                .attr("x", function(d) { return (d[0] + tiles.translate[0]) * tiles.scale; })
+                .attr("y", function(d) { return (d[1] + tiles.translate[1]) * tiles.scale; })
+                .attr("width", tiles.scale)
+                .attr("height", tiles.scale)
+                .on("click", reset);
+
+
+      map.selectAll("path")
+        .data(topojson.feature(json, json.objects.IndonesiaFires).features)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .attr("class", "feature")
+        .on("mouseover", function(d){
+            //create an info
+            var info = d3.select("#info");
+            info.select("#district").text(d.properties.NAME_1);
+            info.classed("hidden", false);
+          })
+        .on("mouseout", function(d){
+            d3.select(this)
+            .classed("selected", false);
+          })
+        .on("click", clicked);
+        });
+      }
+
+    drawMap();
+};
+
+var createTrendChart = function(){
+
+  //Trend chart variables
+  var width = 700, height = 270;
+  var margins = {top: 10, right: 10, bottom: 40, left: 60};
+  var chartwidth = width - margins.left - margins.right;
+  var chartheight = height - margins.top - margins.bottom;
+  var years = [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015];
+  var svgChartArea = d3.select("#chartDiv")
+                  .append("svg")
+                  .attr("width", width)
+                  .attr("height", height);
+  var chart = svgChartArea.append("g")
+                .attr("transform","translate("+margins.left + "," + margins.top + ")");
+  var dataset = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  //Scales
+  var xScale = d3.scale.ordinal()
+                .domain(d3.range(2001,2016))
+                .rangeRoundBands([0,chartwidth],0.3);
+  var yScale = d3.scale.linear()
+                .domain([0, 1000])
+                .range([chartheight, 0]);
+  //Define x,y axis
+  var xAxis = d3.svg.axis()
+          .scale(xScale)
+          .orient("bottom")
+          .ticks(15);
+  var yAxis = d3.svg.axis()
+          .scale(yScale)
+          .orient("left");
+
+  //Create bar chart
+  var drawChart = function(){
+    chart.selectAll("rect")
+      .data(dataset)
+      .enter()
+      .append("rect")
+      .attr("x", function(d, i){
+        return xScale(2001+i);
+      })
+      .attr("y", function(d){
+        return yScale(d);
+      })
+      .attr("width", xScale.rangeBand())
+      .attr("height", function(d){
+        return chartheight - yScale(d);
+      })
+      .on("mouseover", function(d,i){
+        d3.selectAll("rect").classed("selected", false);
+        d3.select(this).attr("class", "selected");
+        selected_year = i;
+        pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+        pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+        barChart.updateBarChart(selected_id, selected_year);
+      });
+    chart.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + (chartheight) + ")")
+        .call(xAxis);
+    chart.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+    }
+
+  drawChart.updateTrendChart = function(selected_data){
+    //var test = d3.values(selected_data); More efficient?
+    dataset = [selected_data.properties.F2001,selected_data.properties.F2002,selected_data.properties.F2003,selected_data.properties.F2004,selected_data.properties.F2005,selected_data.properties.F2006,selected_data.properties.F2007,selected_data.properties.F2008,selected_data.properties.F2009,selected_data.properties.F2010,selected_data.properties.F2011,selected_data.properties.F2012,selected_data.properties.F2013,selected_data.properties.F2014,selected_data.properties.F2015];
+
+    yScale.domain([0, d3.max(dataset)])
+
+    chart.selectAll("rect")
+      .data(dataset)
+      .transition()
+      .duration(1000)
+      .attr("x", function(d, i){
+        return xScale(2001+i);
+      })
+      .attr("y", function(d){
+        return yScale(d);
+      })
+      .attr("width", xScale.rangeBand())
+      .attr("height", function(d){
+        return chartheight - yScale(d);
+      });
+
+    //Update Y axis
+    chart.select(".y.axis")
+        .transition()
+        .duration(1000)
+      .call(yAxis);
+    };
+  drawChart();
+  return drawChart;
+}
+
+//Tables and variables for pie charts
+var mockdataset = [0,50];
+var selected_id, selected_year;
+var pie_w = 200, pie_h = 200;
+var pie_margins = {top: 10, right: 10, bottom: 40, left: 10};
+var pie = d3.layout.pie().sort(null);
+var color1 = ["#1B5E48","#B6BFBC"];
+var color2 = ["#1B50A6","#B6BFBC"];
+var color3 = ["#BFA2A7", "#ADBFA2", "#A2A3BF", "#B6BFBC"];
+var outerRadius = pie_w / 2;
+var innerRadius = 0;
+var arc = d3.svg.arc()
+                .innerRadius(innerRadius)
+                .outerRadius(outerRadius-10);
+var svgPie1 = d3.select("#pieDiv1")
+                .append("svg")
+                .attr("width", pie_w)
+                .attr("height", pie_h);
+var svgPie2 = d3.select("#pieDiv2")
+                .append("svg")
+                .attr("width", pie_w)
+                .attr("height", pie_h);
+
+var createPies = function(){
+
+  var drawPie = function(pie_object, color){
+
+    var pieArcs = pie_object.selectAll("g.arc")
+                  .data(pie(mockdataset))
+                  .enter()
+                  .append("g")
+                  .attr("class","arc")
+                  .attr("transform", "translate(" + outerRadius + ", " + outerRadius + ")");
+    pieArcs.append("path")
+                  .each(function(d) { this._current = d; })
+                  .attr("d",arc)
+                  .attr("fill", function(d, i) {
+                    return color[i];
+                  });
+    pieArcs.append("text");
+
+   }
+
+   drawPie.updatePie = function(pie_object,adm_id,year_id,attr1,attr2) {
+    var selectedTableYear = tables[year_id];
+    var selectedRowAdm = selectedTableYear[adm_id-1];
+    var selectedAttributes = [+selectedRowAdm[attr1], +selectedRowAdm[attr2]];
+    console.log(selectedAttributes);
+
+    function arcTween(a) {
+      var i = d3.interpolate(this._current, a);
+      this._current = i(0);
+      return function(t) {
+        return arc(i(t));
+      };
+    }
+    var formatInteger = d3.format("");
+    pie_object.selectAll("g.arc")
+      .data(pie(selectedAttributes)).select("text").transition().duration(500)
+      .attr("transform", function(d) {
+        return "translate(" + arc.centroid(d) + ")";
+      })
+      .attr("text-anchor", "middle")
+      .tween("text", function(d) {
+            var i = d3.interpolate(this.textContent, d.value);
+            return function(t) {
+              this.textContent = Math.round(i(t));
+            };
+          });
+    pie_object.selectAll("g.arc")
+      .data(pie(selectedAttributes)).select("path").transition().duration(500)
+      .attrTween("d", arcTween);
+  }
+
+  drawPie(svgPie1, color1);
+  drawPie(svgPie2, color2)
+  return drawPie;
+
+}
+
+var createBarChart = function(){
+
+  //Trend chart variables
+  var width = 400, height = 200;
+  var margins = {top: 10, right: 10, bottom: 20, left: 100};
+  var chartwidth = width - margins.left - margins.right;
+  var chartheight = height - margins.top - margins.bottom;
+  var svgBarChartArea = d3.select("#barChart")
+                  .append("svg")
+                  .attr("width", width)
+                  .attr("height", height);
+  var barChart = svgBarChartArea.append("g")
+                .attr("transform","translate("+margins.left + "," + margins.top + ")");
+  var dataset = [0,0,0,0];
+  var categories = ["Logging","Oil Palm","Wood Fiber","Outside Concessions"]
+  //Scales
+  var yScale = d3.scale.ordinal()
+                .domain(categories)
+                .rangeRoundBands([0,chartheight],0.6);
+  var xScale = d3.scale.linear()
+                .domain([0, 1000])
+                .range([0, chartwidth]);
+  //Define x,y axis
+  var xAxis = d3.svg.axis()
+          .scale(xScale)
+          .orient("bottom");
+  var yAxis = d3.svg.axis()
+          .scale(yScale)
+          .orient("left")
+
+  //Create bar chart
+  var drawChart = function(){
+    barChart.selectAll("rect")
+      .data(dataset)
+      .enter()
+      .append("rect")
+      .on("mouseover", function(d,i){
+      })
+      .attr("fill", function(d, i) {
+        return color3[i];
+      })
+      .attr("x", function(d, i){
+        return xScale(0);
+      })
+      .attr("y", function(d,i){
+        var x = categories[i];
+        return yScale(x);
+      })
+      .attr("width", function(d){
+          return xScale(d);
+        })
+      .attr("height", yScale.rangeBand());
+
+    barChart.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + (chartheight) + ")")
+        .call(xAxis);
+    barChart.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+    };
+
+  drawChart.updateBarChart = function(adm_id, year_id){
+    var selectedTableYear = tables[year_id];
+    var selectedRowAdm = selectedTableYear[adm_id-1];
+    var selected_dataset = [+selectedRowAdm.Logging, +selectedRowAdm.OilPalm, +selectedRowAdm.WoodFiber, +selectedRowAdm.OutCon]
+    //var test = d3.values(selected_data); More efficient?
+    xScale.domain([0, d3.max(selected_dataset)]);
+    barChart.selectAll("rect")
+      .data(selected_dataset)
+      .transition()
+      .duration(1000)
+      .attr("x", function(d, i){
+        return xScale(0);
+      })
+      .attr("y", function(d,i){
+        var x = categories[i];
+        return yScale(x);
+      })
+      .attr("width", function(d){
+          return xScale(d);
+        })
+      .attr("height", yScale.rangeBand());
+
+    //Update X axis
+    barChart.select(".x.axis")
+        .transition()
+        .duration(1000)
+        .call(xAxis);
+    };
+  drawChart();
+  return drawChart;
+}
+
+
+
+loadTables();
+console.log(tables);
+createMap();
+var trendChart = createTrendChart();
+var pies = createPies();
+var barChart = createBarChart();
+
+
+</script>
+</body>
