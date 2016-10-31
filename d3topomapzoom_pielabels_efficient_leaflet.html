@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
 <head>
   <meta charset="utf-8">
@@ -52,11 +51,11 @@ h3{
   stroke-width: 0.1;
 }
 .feature:hover{
-fill: rgba(145,145,145,0.5);
+fill: rgba(145,145,145,0.2);
 /*    stroke-width: 0.1;*/
 }
 .feature.active {
-fill: transparent;
+fill: rgba(145,145,145,0.2);
 stroke-width: 0.3;
 }
 .mesh {
@@ -106,12 +105,11 @@ path.selected{
 #barChart rect{
 }
 
-#mapDiv svg{
-  border: 1px solid #DADEE5;
-  border-style: dashed;
-  border-radius: 5px;
-  position: relative;
+#mapDiv {
+  width: 800px;
+  height: 350px;
 }
+
 
 #pieDiv1 {
   margin-top:10px;
@@ -148,9 +146,8 @@ path.selected{
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="http://d3js.org/topojson.v1.min.js"></script>
   <script src="http://d3js.org/d3-tile.v0.0.min.js"></script>
-  <script src="http://unpkg.com/leaflet@1.0.1/dist/leaflet-src.js"></script>
-  <script src="http://unpkg.com/esri-leaflet@2.0.4"></script>
-  <script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/leaflet.esri/1.0.4/esri-leaflet.js"></script>
 
 <div id="dashboard">
   <div id="left">
@@ -228,45 +225,49 @@ var loadTables = function(){
 
 var createMap = function(){
 
-  var map_w = 800, map_h = 350;
-  var map = d3.select("#mapDiv").append("svg").attr({width:map_w, height:map_h})
-  map = L.map('mapDiv').setView([0, 117], 4);
-  mapLink = '<a href="http://openstreetmap.org">Global Forest Watch</a>';
+  var active = d3.select("null");
+  mapLink = '<a href="http://52.200.102.67/osm_tiles"></a>';
+  map = new L.map('mapDiv');
 
-/*
-  L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/terrain-background/{z}/{x}/{y}.{ext}', {
-  attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      subdomains: 'abcd',
-  minZoom: 0,
-  maxZoom: 20,
-  ext: 'png'
-  }).addTo(map);
-*/
+  map.setView(new L.LatLng(0, 113),5);
 
   L.esri.basemapLayer("Gray").addTo(map);
-
   L.tileLayer(
           'http://52.200.102.67/osm_tiles/{z}/{x}/{y}.png', {
           attribution: '&copy; ' + mapLink + ' Contributors',
           maxZoom: 22,
           }).addTo(map);
 
-
-  map._initPathRoot()
-
-  var svg = d3.select("#mapDiv").select("svg"),
-	 g = svg.append("g");
+  var svg = d3.select(map.getPanes().overlayPane).append("svg"),
+	   g = svg.append("g").attr("class", "leaflet-zoom-hide");
 
   d3.json("toposim-IndonesiaFires.json", function(json){
 
-    json.objects.forEach(function(d) {
-			d.LatLng = new L.LatLng(d.circle.coordinates[0],
-									d.circle.coordinates[1])
-		})
+    json = topojson.feature(json, json.objects.IndonesiaFires);
+
+    var transform = d3.geo.transform({point: projectPoint}),
+    path = d3.geo.path().projection(transform);
+
     var feature = g.selectAll("path")
-      .data(topojson.feature(json, json.objects.IndonesiaFires).features)
+      .data(json.features)
       .enter().append("path")
-      .attr("d", path)
+
+    map.on("viewreset", reset);
+    reset();
+
+      function reset() {
+      var bounds = path.bounds(json),
+          topLeft = bounds[0],
+          bottomRight = bounds[1];
+
+      svg.attr("width", bottomRight[0] - topLeft[0])
+        .attr("height", bottomRight[1] - topLeft[1])
+        .style("left", topLeft[0] + "px")
+        .style("top", topLeft[1] + "px");
+
+      g.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
+
+      feature.attr("d", path)
       .attr("class", "feature")
       .on("mouseover", function(d){
           //create an info
@@ -277,23 +278,48 @@ var createMap = function(){
       .on("mouseout", function(d){
           d3.select(this)
           .classed("selected", false);
-        });
-      //.on("click", clicked);
+        })
+      .on("click", clicked);
 
+    }
+    function projectPoint(x, y) {
+      var point = map.latLngToLayerPoint(new L.LatLng(y, x));
+      this.stream.point(point.x, point.y);
+  }
 
-    map.on("viewreset", update);
-  	update();
-
-    function update() {
-			feature.attr("transform",
-			function(d) {
-				return "translate("+
-					map.latLngToLayerPoint(d.LatLng).x +","+
-					map.latLngToLayerPoint(d.LatLng).y +")";
-				}
-			)
-		}
 });
+
+function clicked(d) {
+
+//  if (active.node() === this) return reset();
+  active.classed("active", false);
+  active = d3.select(this).classed("active", true);
+  console.log(((d.geometry.coordinates[0])[0])[0]);
+
+
+/*
+  var bounds = path.bounds(d.features),
+      dx = bounds[1][0] - bounds[0][0],
+      dy = bounds[1][1] - bounds[0][1],
+      x = (bounds[0][0] + bounds[1][0]) / 2,
+      y = (bounds[0][1] + bounds[1][1]) / 2,
+      scale = 2.3,          //replaced: scale = Math.max(1, Math.min(8, 0.9 / Math.max(dx / map_w, dy / map_h))),
+      translate = [map_w / 2 - scale * x, map_h / 2 - scale * y];
+
+  map.transition().duration(750)
+      .call(zoom.translate(translate).scale(scale).event);
+*/
+
+  //Change bar chart and also selected adm1 id
+  trendChart.updateTrendChart(d);
+  selected_id = d.properties.ID;
+  if (selected_year) {
+    pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+    pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+    barChart.updateBarChart(selected_id, selected_year);
+  }
+}
+
 }
 
 
@@ -554,7 +580,7 @@ var createPies = function(){
     var selectedTableYear = tables[year_id];
     var selectedRowAdm = selectedTableYear[adm_id-1];
     var selectedAttributes = [+selectedRowAdm[attr1], +selectedRowAdm[attr2]];
-    console.log(selectedAttributes);
+    //console.log(selectedAttributes);
 
     function arcTween(a) {
       var i = d3.interpolate(this._current, a);
@@ -684,7 +710,7 @@ var createBarChart = function(){
 
 
 loadTables();
-console.log(tables);
+//console.log(tables);
 createMap();
 var trendChart = createTrendChart();
 var pies = createPies();
