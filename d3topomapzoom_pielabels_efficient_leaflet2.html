@@ -141,7 +141,7 @@ stroke-width: 0.3;
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="http://d3js.org/topojson.v1.min.js"></script>
   <script src="http://d3js.org/d3-tile.v0.0.min.js"></script>
-  <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/leaflet.esri/1.0.4/esri-leaflet.js"></script>
   <script>
     // Copyright (c) 2013 Ryan Clark
@@ -240,17 +240,17 @@ var createMap = function(){
 //Variables
   var active = d3.select("null");
   mapLink = '<a href="http://52.200.102.67/osm_tiles"></a>';
-  map = new L.map('mapDiv');
+  map = new L.map('mapDiv', {maxZoom:10,minZoom:3});
 
   map.setView(new L.LatLng(0, 113),5);
 
-  L.esri.basemapLayer("Gray").addTo(map);
-  L.tileLayer(
+//  L.esri.basemapLayer("Gray").addTo(map);
+/*  L.tileLayer(
           'http://52.200.102.67/osm_tiles/{z}/{x}/{y}.png', {
           attribution: '&copy; ' + mapLink + ' Contributors',
           maxZoom: 22,
           }).addTo(map);
-
+*/
   var topoAdm1 = new L.TopoJSON();
   var topoAdm1Data;
 
@@ -259,6 +259,21 @@ var createMap = function(){
     topoAdm1Data = topojson.feature(json, json.objects.IndonesiaFires);
     topoAdm1.addData(topoAdm1Data);
     topoAdm1.addTo(map);
+    topoAdm1.eachLayer(handleLayer);
+
+    function handleLayer(layer){
+
+    layer.setStyle({
+      fillColor : 'transparent',
+      fillOpacity: 0,
+      color:'#555',
+      weight:0.3,
+      opacity:1,
+    });
+
+}
+
+
 
 
 });
