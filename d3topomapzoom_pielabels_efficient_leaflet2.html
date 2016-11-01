@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <link
       rel="stylesheet"
-      href="http://unpkg.com/leaflet@1.0.1/dist/leaflet.css"
+      href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"
   />
   <style>
 @font-face {
@@ -42,21 +42,6 @@ h3{
 .background {
   fill: none;
   pointer-events: all;
-}
-.feature {
-/*  fill: #E8E8E8;*/
-  fill: transparent;
-  cursor: pointer;
-  stroke: black;
-  stroke-width: 0.1;
-}
-.feature:hover{
-fill: rgba(145,145,145,0.2);
-/*    stroke-width: 0.1;*/
-}
-.feature.active {
-fill: rgba(145,145,145,0.2);
-stroke-width: 0.3;
 }
 .mesh {
   fill: none;
@@ -104,7 +89,7 @@ stroke-width: 0.3;
 
 #mapDiv {
   width: 750px;
-  height: 300px;
+  height: 325px;
   border: 1px dashed darkgray;
 }
 #pieDiv1 {
@@ -244,37 +229,70 @@ var createMap = function(){
 
   map.setView(new L.LatLng(0, 113),5);
 
-//  L.esri.basemapLayer("Gray").addTo(map);
-/*  L.tileLayer(
+//Basemaps
+  L.esri.basemapLayer("Gray").addTo(map);
+  L.tileLayer(
           'http://52.200.102.67/osm_tiles/{z}/{x}/{y}.png', {
           attribution: '&copy; ' + mapLink + ' Contributors',
           maxZoom: 22,
           }).addTo(map);
-*/
-  var topoAdm1 = new L.TopoJSON();
-  var topoAdm1Data;
 
   d3.json("toposim-IndonesiaFires.json", function(json){
 
-    topoAdm1Data = topojson.feature(json, json.objects.IndonesiaFires);
-    topoAdm1.addData(topoAdm1Data);
+    function style(feature) {
+      return {
+        fillColor : 'transparent',
+        fillOpacity: 1,
+        color:'#555',
+        weight:0.3,
+        opacity:1
+      };
+    }
+
+    var topoAdm1Data = topojson.feature(json, json.objects.IndonesiaFires);
+    var topoAdm1 = new L.TopoJSON(topoAdm1Data, {style:style});
     topoAdm1.addTo(map);
     topoAdm1.eachLayer(handleLayer);
 
     function handleLayer(layer){
 
-    layer.setStyle({
-      fillColor : 'transparent',
-      fillOpacity: 0,
-      color:'#555',
-      weight:0.3,
-      opacity:1,
-    });
+    //  layer.setStyle(style());
 
-}
+      layer.on({
+        click : clicked,
+        mouseover: hover,
+        mouseout: reset
+      });
 
+    }
 
+    function clicked(e) {
+        //Change bar chart and also selected adm1 id
+        var layer = e.target
+        trendChart.updateTrendChart(layer.feature);
+        selected_id = layer.feature.properties.ID;
+        if (selected_year) {
+          pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+          pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+          barChart.updateBarChart(selected_id, selected_year);
+        }
+        layer.setStyle({
+          fillColor: 'rgba(145,145,145,0.2)',
+          weight: 0.3,
+        })
+        map.fitBounds(e.target.getBounds());
+    }
 
+    function hover(e) {
+        var layer = e.target;
+        layer.setStyle({
+          fillColor: 'rgba(145,145,145,0.2)',
+        });
+    }
+    function reset(e) {
+      var layer = e.target
+      topoAdm1.resetStyle(layer);
+    }
 
 });
 }
@@ -282,84 +300,6 @@ var createMap = function(){
 
 
 
-
-/*
-  var svg = d3.select(map.getPanes().overlayPane).append("svg"),
-	   g = svg.append("g").attr("class", "leaflet-zoom-hide");
-
-    d3.json("toposim-IndonesiaFires.json", function(json){
-
-      json = topojson.feature(json, json.objects.IndonesiaFires);
-      var transform = d3.geo.transform({point: projectPoint}),
-      path = d3.geo.path().projection(transform);
-      var feature = g.selectAll("path")
-        .data(json.features)
-        .enter().append("path")
-
-      map.on("viewreset", reset);
-      reset();
-
-        function reset() {
-
-          var bounds = path.bounds(json),
-              topLeft = bounds[0],
-              bottomRight = bounds[1];
-
-          svg.attr("width", bottomRight[0] - topLeft[0])
-            .attr("height", bottomRight[1] - topLeft[1])
-            .style("left", topLeft[0] + "px")
-            .style("top", topLeft[1] + "px");
-
-          g.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
-
-          feature.attr("d", path)
-          .attr("class", "feature")
-          .on("mouseover", function(d){
-              //create an info
-              var info = d3.select("#info");
-              info.select("#district").text(d.properties.NAME_1);
-              info.classed("hidden", false);
-            })
-          .on("click", clicked);
-
-          if (!active.empty()) {
-            active.classed("active", true);
-          }
-
-      }
-
-        function projectPoint(x, y) {
-          var point = map.latLngToLayerPoint(new L.LatLng(y, x));
-          this.stream.point(point.x, point.y);
-      }
-
-        function clicked(d) {
-
-          //Change bar chart and also selected adm1 id
-          trendChart.updateTrendChart(d);
-          selected_id = d.properties.ID;
-          if (selected_year) {
-            pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
-            pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
-            barChart.updateBarChart(selected_id, selected_year);
-          }
-
-          //if (active.node() === this) return reset();
-          active.classed("active", false);
-          active = d3.select(this);
-          active.classed("active", true);
-          var bounds = d3.geo.bounds(d);
-          console.log(bounds),
-            dx = bounds[1][0] - bounds[0][0],
-            dy = bounds[1][1] - bounds[0][1],
-            x = (bounds[0][0] + bounds[1][0]) / 2,
-            y = (bounds[0][1] + bounds[1][1]) / 2;
-          map.panTo(new L.LatLng(y, x));
-      }
-  });
-}
-
-*/
 
 var createTrendChart = function(){
 
