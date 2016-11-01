@@ -74,9 +74,6 @@ stroke-width: 0.3;
 .axis text {
   font-size: 11px;
 }
-path.selected{
-  fill:darkgray;
-}
 
 #info{
   position:absolute;
@@ -106,11 +103,10 @@ path.selected{
 }
 
 #mapDiv {
-  width: 800px;
-  height: 350px;
+  width: 750px;
+  height: 300px;
+  border: 1px dashed darkgray;
 }
-
-
 #pieDiv1 {
   margin-top:10px;
 }
@@ -138,7 +134,6 @@ path.selected{
 #right{
   overflow: hidden;
 }
-
 
   </style>
 </head>
@@ -225,6 +220,7 @@ var loadTables = function(){
 
 var createMap = function(){
 
+//Variables
   var active = d3.select("null");
   mapLink = '<a href="http://52.200.102.67/osm_tiles"></a>';
   map = new L.map('mapDiv');
@@ -241,92 +237,77 @@ var createMap = function(){
   var svg = d3.select(map.getPanes().overlayPane).append("svg"),
 	   g = svg.append("g").attr("class", "leaflet-zoom-hide");
 
-  d3.json("toposim-IndonesiaFires.json", function(json){
+    d3.json("toposim-IndonesiaFires.json", function(json){
 
-    json = topojson.feature(json, json.objects.IndonesiaFires);
+      json = topojson.feature(json, json.objects.IndonesiaFires);
+      var transform = d3.geo.transform({point: projectPoint}),
+      path = d3.geo.path().projection(transform);
+      var feature = g.selectAll("path")
+        .data(json.features)
+        .enter().append("path")
 
-    var transform = d3.geo.transform({point: projectPoint}),
-    path = d3.geo.path().projection(transform);
+      map.on("viewreset", reset);
+      reset();
 
-    var feature = g.selectAll("path")
-      .data(json.features)
-      .enter().append("path")
+        function reset() {
 
-    map.on("viewreset", reset);
-    reset();
+          var bounds = path.bounds(json),
+              topLeft = bounds[0],
+              bottomRight = bounds[1];
 
-      function reset() {
-      var bounds = path.bounds(json),
-          topLeft = bounds[0],
-          bottomRight = bounds[1];
+          svg.attr("width", bottomRight[0] - topLeft[0])
+            .attr("height", bottomRight[1] - topLeft[1])
+            .style("left", topLeft[0] + "px")
+            .style("top", topLeft[1] + "px");
 
-      svg.attr("width", bottomRight[0] - topLeft[0])
-        .attr("height", bottomRight[1] - topLeft[1])
-        .style("left", topLeft[0] + "px")
-        .style("top", topLeft[1] + "px");
+          g.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
 
-      g.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
+          feature.attr("d", path)
+          .attr("class", "feature")
+          .on("mouseover", function(d){
+              //create an info
+              var info = d3.select("#info");
+              info.select("#district").text(d.properties.NAME_1);
+              info.classed("hidden", false);
+            })
+          .on("click", clicked);
 
-      feature.attr("d", path)
-      .attr("class", "feature")
-      .on("mouseover", function(d){
-          //create an info
-          var info = d3.select("#info");
-          info.select("#district").text(d.properties.NAME_1);
-          info.classed("hidden", false);
-        })
-      .on("mouseout", function(d){
-          d3.select(this)
-          .classed("selected", false);
-        })
-      .on("click", clicked);
+          if (!active.empty()) {
+            active.classed("active", true);
+          }
 
-    }
-    function projectPoint(x, y) {
-      var point = map.latLngToLayerPoint(new L.LatLng(y, x));
-      this.stream.point(point.x, point.y);
-  }
+      }
 
-});
+        function projectPoint(x, y) {
+          var point = map.latLngToLayerPoint(new L.LatLng(y, x));
+          this.stream.point(point.x, point.y);
+      }
 
-function clicked(d) {
+        function clicked(d) {
 
-//  if (active.node() === this) return reset();
-  active.classed("active", false);
-  active = d3.select(this).classed("active", true);
-  console.log(((d.geometry.coordinates[0])[0])[0]);
+          //Change bar chart and also selected adm1 id
+          trendChart.updateTrendChart(d);
+          selected_id = d.properties.ID;
+          if (selected_year) {
+            pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+            pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+            barChart.updateBarChart(selected_id, selected_year);
+          }
 
-
-/*
-  var bounds = path.bounds(d.features),
-      dx = bounds[1][0] - bounds[0][0],
-      dy = bounds[1][1] - bounds[0][1],
-      x = (bounds[0][0] + bounds[1][0]) / 2,
-      y = (bounds[0][1] + bounds[1][1]) / 2,
-      scale = 2.3,          //replaced: scale = Math.max(1, Math.min(8, 0.9 / Math.max(dx / map_w, dy / map_h))),
-      translate = [map_w / 2 - scale * x, map_h / 2 - scale * y];
-
-  map.transition().duration(750)
-      .call(zoom.translate(translate).scale(scale).event);
-*/
-
-  //Change bar chart and also selected adm1 id
-  trendChart.updateTrendChart(d);
-  selected_id = d.properties.ID;
-  if (selected_year) {
-    pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
-    pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
-    barChart.updateBarChart(selected_id, selected_year);
-  }
+          //if (active.node() === this) return reset();
+          active.classed("active", false);
+          active = d3.select(this);
+          active.classed("active", true);
+          var bounds = d3.geo.bounds(d);
+          console.log(bounds),
+            dx = bounds[1][0] - bounds[0][0],
+            dy = bounds[1][1] - bounds[0][1],
+            x = (bounds[0][0] + bounds[1][0]) / 2,
+            y = (bounds[0][1] + bounds[1][1]) / 2;
+          map.setView(new L.LatLng(y, x), 6);
+      }
+  });
 }
-
-}
-
-
-
-
-
-
 
 /*
     //Map variables
@@ -441,8 +422,8 @@ function clicked(d) {
 var createTrendChart = function(){
 
   //Trend chart variables
-  var width = 700, height = 270;
-  var margins = {top: 10, right: 10, bottom: 40, left: 60};
+  var width = 700, height = 250;
+  var margins = {top: 50, right: 10, bottom: 40, left: 80};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
   var years = [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015];
@@ -536,11 +517,11 @@ var createTrendChart = function(){
 //Tables and variables for pie charts
 var mockdataset = [0,50];
 var selected_id, selected_year;
-var pie_w = 200, pie_h = 200;
+var pie_w = 180, pie_h = 180;
 var pie_margins = {top: 10, right: 10, bottom: 40, left: 10};
 var pie = d3.layout.pie().sort(null);
 var color1 = ["#1B5E48","#B6BFBC"];
-var color2 = ["#1B50A6","#B6BFBC"];
+var color2 = ["#1B455E","#B6BFBC"];
 var color3 = ["#BFA2A7", "#ADBFA2", "#A2A3BF", "#B6BFBC"];
 var outerRadius = pie_w / 2;
 var innerRadius = 0;
@@ -616,8 +597,8 @@ var createPies = function(){
 var createBarChart = function(){
 
   //Trend chart variables
-  var width = 400, height = 200;
-  var margins = {top: 10, right: 10, bottom: 20, left: 100};
+  var width = 400, height = 150;
+  var margins = {top: 10, right: 20, bottom: 20, left: 100};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
   var svgBarChartArea = d3.select("#barChart")
@@ -631,14 +612,15 @@ var createBarChart = function(){
   //Scales
   var yScale = d3.scale.ordinal()
                 .domain(categories)
-                .rangeRoundBands([0,chartheight],0.6);
+                .rangeRoundBands([0,chartheight],0.4);
   var xScale = d3.scale.linear()
                 .domain([0, 1000])
                 .range([0, chartwidth]);
   //Define x,y axis
   var xAxis = d3.svg.axis()
           .scale(xScale)
-          .orient("bottom");
+          .orient("bottom")
+          .ticks(8);
   var yAxis = d3.svg.axis()
           .scale(yScale)
           .orient("left")
@@ -680,7 +662,7 @@ var createBarChart = function(){
     var selectedRowAdm = selectedTableYear[adm_id-1];
     var selected_dataset = [+selectedRowAdm.Logging, +selectedRowAdm.OilPalm, +selectedRowAdm.WoodFiber, +selectedRowAdm.OutCon]
     //var test = d3.values(selected_data); More efficient?
-    xScale.domain([0, d3.max(selected_dataset)]);
+    xScale.domain([0, d3.max(selected_dataset)]).ticks(8);
     barChart.selectAll("rect")
       .data(selected_dataset)
       .transition()
