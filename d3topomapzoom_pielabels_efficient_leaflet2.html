@@ -143,6 +143,23 @@ stroke-width: 0.3;
   <script src="http://d3js.org/d3-tile.v0.0.min.js"></script>
   <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/leaflet.esri/1.0.4/esri-leaflet.js"></script>
+  <script>
+    // Copyright (c) 2013 Ryan Clark
+    // https://gist.github.com/rclark/5779673
+    L.TopoJSON = L.GeoJSON.extend({
+      addData: function(jsonData) {
+        if (jsonData.type === "Topology") {
+          for (key in jsonData.objects) {
+            geojson = topojson.feature(jsonData, jsonData.objects[key]);
+            L.GeoJSON.prototype.addData.call(this, geojson);
+          }
+        }
+        else {
+          L.GeoJSON.prototype.addData.call(this, jsonData);
+        }
+      }
+    });
+  </script>
 
 <div id="dashboard">
   <div id="left">
@@ -234,6 +251,24 @@ var createMap = function(){
           maxZoom: 22,
           }).addTo(map);
 
+  var topoAdm1 = new L.TopoJSON();
+  var topoAdm1Data;
+
+  d3.json("toposim-IndonesiaFires.json", function(json){
+
+    topoAdm1Data = topojson.feature(json, json.objects.IndonesiaFires);
+    topoAdm1.addData(topoAdm1Data);
+    topoAdm1.addTo(map);
+
+
+});
+}
+
+
+
+
+
+/*
   var svg = d3.select(map.getPanes().overlayPane).append("svg"),
 	   g = svg.append("g").attr("class", "leaflet-zoom-hide");
 
@@ -308,6 +343,8 @@ var createMap = function(){
       }
   });
 }
+
+*/
 
 var createTrendChart = function(){
 
