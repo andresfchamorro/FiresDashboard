@@ -230,7 +230,7 @@ var createMap = function(){
   map.setView(new L.LatLng(0, 113),5);
 
 //Basemaps
-  L.esri.basemapLayer("Gray").addTo(map);
+  L.esri.basemapLayer("Gray",{opacity: 0.5}).addTo(map);
   L.tileLayer(
           'http://52.200.102.67/osm_tiles/{z}/{x}/{y}.png', {
           attribution: '&copy; ' + mapLink + ' Contributors',
@@ -251,8 +251,11 @@ var createMap = function(){
 
     var topoAdm1Data = topojson.feature(json, json.objects.IndonesiaFires);
     var topoAdm1 = new L.TopoJSON(topoAdm1Data, {style:style});
+    var clicked_boolean = false;
     topoAdm1.addTo(map);
     topoAdm1.eachLayer(handleLayer);
+
+    L.esri.basemapLayer("GrayLabels", {opacity: 0.5}).addTo(map)
 
     function handleLayer(layer){
 
@@ -281,6 +284,7 @@ var createMap = function(){
           weight: 0.3,
         })
         map.fitBounds(e.target.getBounds());
+        layer.off('mouseover', reset);
     }
 
     function hover(e) {
@@ -290,16 +294,14 @@ var createMap = function(){
         });
     }
     function reset(e) {
-      var layer = e.target
-      topoAdm1.resetStyle(layer);
+      var layer = e.target;
+      if (!clicked_boolean) {
+        topoAdm1.resetStyle(layer);
+      }
     }
 
 });
 }
-
-
-
-
 
 var createTrendChart = function(){
 
