@@ -61,8 +61,10 @@ h3{
 }
 
 #info{
-  position:absolute;
-  width:100px;
+  z-index: 1;
+  position:relative;
+  top: 0;
+  width:200px;
   height:auto;
   padding:10px;
   background-color:transparent;
@@ -74,7 +76,7 @@ h3{
 }
 #info p{
   margin:0px;
-  font-size:14px;
+  font-size:12px;
 }
 
 #chartDiv rect{
@@ -83,18 +85,23 @@ h3{
 #chartDiv rect.selected{
   fill:darkred;
 }
+#chartDiv svg {
+  display: block;
+  margin: auto;
+}
 
-#barChart rect{
+#barChart, #pieDiv1, #pieDiv2 {
+  display: inline-block;
 }
 
 #mapDiv {
   width: 750px;
-  height: 325px;
+  height: 300px;
   border: 1px dashed darkgray;
+  margin: auto;
+  display: block;
 }
-#pieDiv1 {
-  margin-top:10px;
-}
+
 #pieDiv1 path {
   stroke: #fff;
 }
@@ -111,10 +118,11 @@ h3{
 }
 #dashboard{
   overflow: hidden;
+  width: 100%;
 }
 #left{
-  width: 700px;
-  float:left;
+  width: 800px;
+  margin: auto;
 }
 #right{
   overflow: hidden;
@@ -146,28 +154,27 @@ h3{
     });
   </script>
 
-<div id="dashboard">
   <div id="left">
     <h1>Fires Dashboard</h1>
-    <div id="mapDiv">
+    <div id="mapDiv"></div>
+    <div id="chartDiv">
       <div id="info" class="hidden">
         <p id="district">District</p>
       </div>
     </div>
-    <div id="chartDiv"></div>
+    <div id="bottom">
+      <div id="pieDiv1">
+        <h3>Protected vs Non-Protected</h3>
+      </div>
+      <div id="pieDiv2">
+        <h3>Peat vs Non-Peat</h3>
+      </div>
+      <div id="barChart">
+        <h3>Fires in Concession Areas</h3>
+      </div>
+    </div>
   </div>
-  <div id="right">
-    <div id="pieDiv1">
-      <h3>Protected vs Non-Protected</h3>
-    </div>
-    <div id="pieDiv2">
-      <h3>Peat vs Non-Peat</h3>
-    </div>
-    <div id="barChart">
-      <h3>Fires in Concession Areas</h3>
-    </div>
-  </div>
-</div>
+
 
 <script>
 
@@ -227,7 +234,7 @@ var createMap = function(){
   mapLink = '<a href="http://52.200.102.67/osm_tiles"></a>';
   map = new L.map('mapDiv', {maxZoom:10,minZoom:3});
 
-  map.setView(new L.LatLng(0, 113),5);
+  map.setView(new L.LatLng(-3, 118),4);
 
 //Basemaps
   L.esri.basemapLayer("Gray",{opacity: 0.5}).addTo(map);
@@ -251,9 +258,9 @@ var createMap = function(){
 
     var topoAdm1Data = topojson.feature(json, json.objects.IndonesiaFires);
     var topoAdm1 = new L.TopoJSON(topoAdm1Data, {style:style});
-    var clicked_boolean = false;
     topoAdm1.addTo(map);
     topoAdm1.eachLayer(handleLayer);
+    var selected_region;
 
     L.esri.basemapLayer("GrayLabels", {opacity: 0.5}).addTo(map)
 
@@ -266,7 +273,6 @@ var createMap = function(){
         mouseover: hover,
         mouseout: reset
       });
-
     }
 
     function clicked(e) {
@@ -283,8 +289,7 @@ var createMap = function(){
           fillColor: 'rgba(145,145,145,0.2)',
           weight: 0.3,
         })
-        map.fitBounds(e.target.getBounds());
-        layer.off('mouseover', reset);
+        map.fitBounds(layer.getBounds());
     }
 
     function hover(e) {
@@ -292,12 +297,14 @@ var createMap = function(){
         layer.setStyle({
           fillColor: 'rgba(145,145,145,0.2)',
         });
+        //create an info
+        var info = d3.select("#info");
+        info.select("#district").text(layer.feature.properties.NAME_1);
+        info.classed("hidden", false);
     }
     function reset(e) {
       var layer = e.target;
-      if (!clicked_boolean) {
-        topoAdm1.resetStyle(layer);
-      }
+      topoAdm1.resetStyle(layer);
     }
 
 });
@@ -307,7 +314,7 @@ var createTrendChart = function(){
 
   //Trend chart variables
   var width = 700, height = 270;
-  var margins = {top: 50, right: 10, bottom: 40, left: 80};
+  var margins = {top: 40, right: 20, bottom: 40, left: 50};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
   var years = [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015];
