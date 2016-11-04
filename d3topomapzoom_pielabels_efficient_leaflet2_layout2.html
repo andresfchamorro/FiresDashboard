@@ -22,18 +22,23 @@ body {
   position: relative;
 }
 h1{
-  margin-left: 10px;
-  margin-top: 5px;
-  margin-bottom:5px;
   color: #3B3B3B;
+  font-size: 18px;
+  margin: 5px;
+  text-align: center;
 }
 h3{
   display: block;
   font-size: 16px;
-  margin: 0px;
+  margin: 10px;
   font-weight: normal;
+}
+h4{
+  display: block;
+  margin: 0px;
   text-align: center;
 }
+
 .background {
   fill: none;
   pointer-events: all;
@@ -56,14 +61,13 @@ h3{
 }
 #info{
   z-index: 1;
-  position:absolute;
-  top: 0;
+  position:relative;
   width:200px;
-  height:auto;
+  height:80px;
   padding:10px;
   background-color:transparent;
   border-radius:10px;
-  box-shadow: 4px 4px 10px rgba(0,0,0,0.1);
+  /*box-shadow: 4px 4px 10px rgba(0,0,0,0.1);*/
 }
 #info.hidden{
   display:none;
@@ -150,23 +154,25 @@ h3{
 
 <div id="dashboard">
   <div id="left">
-    <h1>Fires Dashboard</h1>
+    <h3>Click on a region to view the trend of fires</h3>
     <div id="mapDiv"></div>
-    <div id="chartDiv">
-      <div id="info" class="hidden">
-        <p id="district">District</p>
-      </div>
-    </div>
+    <h3>Hover over a year to analyze where fires happen</h3>
+    <div id="chartDiv"></div>
   </div>
   <div id="right">
+    <div id="info">
+      <h1 id="number"><h1>
+      <h1 id="place"></h1>
+      <h1 id="year"></h1>
+    </div>
     <div id="pieDiv1">
-      <h3>Protected vs Non-Protected</h3>
+      <h4>Protected vs Non-Protected</h4>
     </div>
     <div id="pieDiv2">
-      <h3>Peat vs Non-Peat</h3>
+      <h4>Peat vs Non-Peat</h4>
     </div>
     <div id="barChart">
-      <h3>Fires in Concession Areas</h3>
+      <h4>Fires in Concession Areas</h4>
     </div>
   </div>
 </div>
@@ -227,17 +233,43 @@ var createMap = function(){
 //Variables
   var active = d3.select("null");
   mapLink = '<a href="http://52.200.102.67/osm_tiles"></a>';
-  map = new L.map('mapDiv', {maxZoom:10,minZoom:3});
 
-  map.setView(new L.LatLng(-3, 118),4);
-
-//Basemaps
-  L.esri.basemapLayer("Gray",{opacity: 0.5}).addTo(map);
-  L.tileLayer(
+//Layers
+  var gray = L.esri.basemapLayer("Gray",{opacity: 0.5});
+  var kd2015 = L.tileLayer(
           'http://52.200.102.67/osm_tiles/{z}/{x}/{y}.png', {
           attribution: '&copy; ' + mapLink + ' Contributors',
           maxZoom: 22,
-          }).addTo(map);
+          });
+  var kdAllYears = L.tileLayer(
+          'http://52.200.102.67/osm_tiles2/{z}/{x}/{y}.png', {
+          attribution: '&copy; ' + mapLink + ' Contributors',
+          maxZoom: 22,
+        });
+
+  map = new L.map('mapDiv', {
+            maxZoom:8,
+            minZoom:4,
+            center:[-3, 118],
+            zoom: 4,
+            layers: [gray, kd2015]
+          });
+
+  L.esri.basemapLayer("GrayLabels", {opacity: 0.5}).addTo(map).bringToFront();
+  var overlayHeatmap = {
+    "Heatmap: 2015": kd2015,
+    "Heatmap: Last 15 Years": kdAllYears
+  };
+
+  L.control.layers(overlayHeatmap).addTo(map);
+
+  var legend = L.control({position:'bottomleft'});
+  legend.onAdd = function (map){
+    var div = L.DomUtil.create('div', 'legend');
+    div.innerHTML += '<img src="legend.png" alt="legend" >';
+    return div;
+  };
+  legend.addTo(map);
 
   d3.json("toposim-IndonesiaFires.json", function(json){
 
@@ -255,9 +287,7 @@ var createMap = function(){
     var topoAdm1 = new L.TopoJSON(topoAdm1Data, {style:style});
     topoAdm1.addTo(map);
     topoAdm1.eachLayer(handleLayer);
-    var selected_region;
 
-    L.esri.basemapLayer("GrayLabels", {opacity: 0.5}).addTo(map)
 
     function handleLayer(layer){
 
@@ -279,12 +309,21 @@ var createMap = function(){
           pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
           pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
           barChart.updateBarChart(selected_id, selected_year);
+          var idname = "F" + (selected_year+2001);
+          //update info
+          var info = d3.select("#info");
+          info.select("#number").text(formatLong(layer.feature.properties[idname]));
+          //console.log(selected_year);
+          //console.log(layer.feature.properties[idname]);
         }
         layer.setStyle({
           fillColor: 'rgba(145,145,145,0.2)',
           weight: 0.3,
         })
         map.fitBounds(layer.getBounds());
+        //update info
+        var info = d3.select("#info");
+        info.select("#place").text("Fires in " + layer.feature.properties.NAME_1);
     }
 
     function hover(e) {
@@ -292,10 +331,6 @@ var createMap = function(){
         layer.setStyle({
           fillColor: 'rgba(145,145,145,0.2)',
         });
-        //create an info
-        var info = d3.select("#info");
-        info.select("#district").text(layer.feature.properties.NAME_1);
-        info.classed("hidden", false);
     }
     function reset(e) {
       var layer = e.target;
@@ -308,8 +343,8 @@ var createMap = function(){
 var createTrendChart = function(){
 
   //Trend chart variables
-  var width = 550, height = 270;
-  var margins = {top: 40, right: 20, bottom: 40, left: 50};
+  var width = 550, height = 250;
+  var margins = {top: 20, right: 20, bottom: 40, left: 50};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
   var years = [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015];
@@ -359,6 +394,10 @@ var createTrendChart = function(){
         pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
         pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
         barChart.updateBarChart(selected_id, selected_year);
+        //update info
+        var info = d3.select("#info");
+        info.select("#number").text(formatLong(d));
+        info.select("#year").text("in " + (i+2001));
       });
     chart.append("g")
         .attr("class", "x axis")
@@ -378,7 +417,7 @@ var createTrendChart = function(){
     chart.selectAll("rect")
       .data(dataset)
       .transition()
-      .duration(1000)
+      .duration(750)
       .attr("x", function(d, i){
         return xScale(2001+i);
       })
@@ -393,17 +432,18 @@ var createTrendChart = function(){
     //Update Y axis
     chart.select(".y.axis")
         .transition()
-        .duration(1000)
+        .duration(750)
       .call(yAxis);
     };
   drawChart();
   return drawChart;
 }
 
+var formatLong = d3.format(",d");
 //Tables and variables for pie charts
 var mockdataset = [0,50];
 var selected_id, selected_year;
-var pie_w = 170, pie_h = 170;
+var pie_w = 160, pie_h = 160;
 //var pie_margins = {top: 10, right: 10, bottom: 0, left: 10};
 var pie = d3.layout.pie().sort(null);
 var color1 = ["#1B5E48","#B6BFBC"];
@@ -457,23 +497,21 @@ var createPies = function(){
         return arc(i(t));
       };
     }
-    var formatPercentage = d3.format("%");
-    console.log(percentages);
 
     pie_object.selectAll("g.arc")
-      .data(pie(percentages)).select("text").transition().duration(500)
+      .data(pie(percentages)).select("text").transition().duration(750)
       .attr("transform", function(d) {
         return "translate(" + arc.centroid(d) + ")";
       })
       .attr("text-anchor", "middle")
-      .styleTween("text", function(d) {
-            var i = d3.interpolateString(this.textContent, d.value + "%");
+      .tween("text", function(d) {
+            var i = d3.interpolateRound(+this.textContent.replace('%', ''), d.value);
             return function(t) {
-              this.textContent = i(t);
+              this.textContent = i(t) + '%';
             };
           });
       pie_object.selectAll("g.arc")
-      .data(pie(selectedAttributes)).select("path").transition().duration(500)
+      .data(pie(selectedAttributes)).select("path").transition().duration(750)
       .attrTween("d", arcTween);
   }
 
@@ -585,7 +623,7 @@ var createBarChart = function(){
     barChart.selectAll("rect")
       .data(selected_dataset)
       .transition()
-      .duration(1000)
+      .duration(750)
       .attr("x", function(d, i){
         return xScale(0);
       })
@@ -601,7 +639,7 @@ var createBarChart = function(){
     //Update X axis
     barChart.select(".x.axis")
         .transition()
-        .duration(1000)
+        .duration(750)
         .call(xAxis);
     };
   drawChart();
