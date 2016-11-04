@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <link
       rel="stylesheet"
-      href="http://unpkg.com/leaflet@1.0.1/dist/leaflet.css"
+      href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"
   />
   <style>
 @font-face {
@@ -27,11 +27,6 @@ h1{
   margin-bottom:5px;
   color: #3B3B3B;
 }
-
-#right svg {
-  display: block;
-  margin: auto;
-}
 h3{
   display: block;
   font-size: 16px;
@@ -42,21 +37,6 @@ h3{
 .background {
   fill: none;
   pointer-events: all;
-}
-.feature {
-/*  fill: #E8E8E8;*/
-  fill: transparent;
-  cursor: pointer;
-  stroke: black;
-  stroke-width: 0.1;
-}
-.feature:hover{
-fill: rgba(145,145,145,0.2);
-/*    stroke-width: 0.1;*/
-}
-.feature.active {
-fill: rgba(145,145,145,0.2);
-stroke-width: 0.3;
 }
 .mesh {
   fill: none;
@@ -74,10 +54,11 @@ stroke-width: 0.3;
 .axis text {
   font-size: 11px;
 }
-
 #info{
+  z-index: 1;
   position:absolute;
-  width:100px;
+  top: 0;
+  width:200px;
   height:auto;
   padding:10px;
   background-color:transparent;
@@ -89,7 +70,7 @@ stroke-width: 0.3;
 }
 #info p{
   margin:0px;
-  font-size:14px;
+  font-size:12px;
 }
 
 #chartDiv rect{
@@ -98,18 +79,18 @@ stroke-width: 0.3;
 #chartDiv rect.selected{
   fill:darkred;
 }
+#chartDiv svg {
+}
 
-#barChart rect{
+#barChart, #pieDiv1, #pieDiv2 {
 }
 
 #mapDiv {
-  width: 750px;
-  height: 300px;
+  width: 550px;
+  height: 250px;
   border: 1px dashed darkgray;
 }
-#pieDiv1 {
-  margin-top:10px;
-}
+
 #pieDiv1 path {
   stroke: #fff;
 }
@@ -126,33 +107,56 @@ stroke-width: 0.3;
 }
 #dashboard{
   overflow: hidden;
+  margin: auto;
+  width: 800px;
 }
 #left{
-  width: 700px;
-  float:left;
+  width: 550px;
+  float: left;
 }
 #right{
   overflow: hidden;
+  width: 250px;
 }
-
+#right svg {
+  display: block;
+  margin: auto;
+}
   </style>
 </head>
 <body>
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="http://d3js.org/topojson.v1.min.js"></script>
   <script src="http://d3js.org/d3-tile.v0.0.min.js"></script>
-  <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/leaflet.esri/1.0.4/esri-leaflet.js"></script>
+  <script>
+    // Copyright (c) 2013 Ryan Clark
+    // https://gist.github.com/rclark/5779673
+    L.TopoJSON = L.GeoJSON.extend({
+      addData: function(jsonData) {
+        if (jsonData.type === "Topology") {
+          for (key in jsonData.objects) {
+            geojson = topojson.feature(jsonData, jsonData.objects[key]);
+            L.GeoJSON.prototype.addData.call(this, geojson);
+          }
+        }
+        else {
+          L.GeoJSON.prototype.addData.call(this, jsonData);
+        }
+      }
+    });
+  </script>
 
 <div id="dashboard">
   <div id="left">
     <h1>Fires Dashboard</h1>
-    <div id="mapDiv">
+    <div id="mapDiv"></div>
+    <div id="chartDiv">
       <div id="info" class="hidden">
         <p id="district">District</p>
       </div>
     </div>
-    <div id="chartDiv"></div>
   </div>
   <div id="right">
     <div id="pieDiv1">
@@ -223,97 +227,89 @@ var createMap = function(){
 //Variables
   var active = d3.select("null");
   mapLink = '<a href="http://52.200.102.67/osm_tiles"></a>';
-  map = new L.map('mapDiv');
+  map = new L.map('mapDiv', {maxZoom:10,minZoom:3});
 
-  map.setView(new L.LatLng(0, 113),5);
+  map.setView(new L.LatLng(-3, 118),4);
 
-  L.esri.basemapLayer("Gray").addTo(map);
+//Basemaps
+  L.esri.basemapLayer("Gray",{opacity: 0.5}).addTo(map);
   L.tileLayer(
           'http://52.200.102.67/osm_tiles/{z}/{x}/{y}.png', {
           attribution: '&copy; ' + mapLink + ' Contributors',
           maxZoom: 22,
           }).addTo(map);
 
-  var svg = d3.select(map.getPanes().overlayPane).append("svg"),
-	   g = svg.append("g").attr("class", "leaflet-zoom-hide");
+  d3.json("toposim-IndonesiaFires.json", function(json){
 
-    d3.json("toposim-IndonesiaFires.json", function(json){
+    function style(feature) {
+      return {
+        fillColor : 'transparent',
+        fillOpacity: 1,
+        color:'#555',
+        weight:0.3,
+        opacity:1
+      };
+    }
 
-      json = topojson.feature(json, json.objects.IndonesiaFires);
-      var transform = d3.geo.transform({point: projectPoint}),
-      path = d3.geo.path().projection(transform);
-      var feature = g.selectAll("path")
-        .data(json.features)
-        .enter().append("path")
+    var topoAdm1Data = topojson.feature(json, json.objects.IndonesiaFires);
+    var topoAdm1 = new L.TopoJSON(topoAdm1Data, {style:style});
+    topoAdm1.addTo(map);
+    topoAdm1.eachLayer(handleLayer);
+    var selected_region;
 
-      map.on("viewreset", reset);
-      reset();
+    L.esri.basemapLayer("GrayLabels", {opacity: 0.5}).addTo(map)
 
-        function reset() {
+    function handleLayer(layer){
 
-          var bounds = path.bounds(json),
-              topLeft = bounds[0],
-              bottomRight = bounds[1];
+    //  layer.setStyle(style());
 
-          svg.attr("width", bottomRight[0] - topLeft[0])
-            .attr("height", bottomRight[1] - topLeft[1])
-            .style("left", topLeft[0] + "px")
-            .style("top", topLeft[1] + "px");
+      layer.on({
+        click : clicked,
+        mouseover: hover,
+        mouseout: reset
+      });
+    }
 
-          g.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
+    function clicked(e) {
+        //Change bar chart and also selected adm1 id
+        var layer = e.target
+        trendChart.updateTrendChart(layer.feature);
+        selected_id = layer.feature.properties.ID;
+        if (selected_year) {
+          pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+          pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+          barChart.updateBarChart(selected_id, selected_year);
+        }
+        layer.setStyle({
+          fillColor: 'rgba(145,145,145,0.2)',
+          weight: 0.3,
+        })
+        map.fitBounds(layer.getBounds());
+    }
 
-          feature.attr("d", path)
-          .attr("class", "feature")
-          .on("mouseover", function(d){
-              //create an info
-              var info = d3.select("#info");
-              info.select("#district").text(d.properties.NAME_1);
-              info.classed("hidden", false);
-            })
-          .on("click", clicked);
+    function hover(e) {
+        var layer = e.target;
+        layer.setStyle({
+          fillColor: 'rgba(145,145,145,0.2)',
+        });
+        //create an info
+        var info = d3.select("#info");
+        info.select("#district").text(layer.feature.properties.NAME_1);
+        info.classed("hidden", false);
+    }
+    function reset(e) {
+      var layer = e.target;
+      topoAdm1.resetStyle(layer);
+    }
 
-          if (!active.empty()) {
-            active.classed("active", true);
-          }
-
-      }
-
-        function projectPoint(x, y) {
-          var point = map.latLngToLayerPoint(new L.LatLng(y, x));
-          this.stream.point(point.x, point.y);
-      }
-
-        function clicked(d) {
-
-          //Change bar chart and also selected adm1 id
-          trendChart.updateTrendChart(d);
-          selected_id = d.properties.ID;
-          if (selected_year) {
-            pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
-            pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
-            barChart.updateBarChart(selected_id, selected_year);
-          }
-
-          //if (active.node() === this) return reset();
-          active.classed("active", false);
-          active = d3.select(this);
-          active.classed("active", true);
-          var bounds = d3.geo.bounds(d);
-          console.log(bounds),
-            dx = bounds[1][0] - bounds[0][0],
-            dy = bounds[1][1] - bounds[0][1],
-            x = (bounds[0][0] + bounds[1][0]) / 2,
-            y = (bounds[0][1] + bounds[1][1]) / 2;
-          map.panTo(new L.LatLng(y, x));
-      }
-  });
+});
 }
 
 var createTrendChart = function(){
 
   //Trend chart variables
-  var width = 700, height = 270;
-  var margins = {top: 50, right: 10, bottom: 40, left: 80};
+  var width = 550, height = 270;
+  var margins = {top: 40, right: 20, bottom: 40, left: 50};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
   var years = [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015];
@@ -407,8 +403,8 @@ var createTrendChart = function(){
 //Tables and variables for pie charts
 var mockdataset = [0,50];
 var selected_id, selected_year;
-var pie_w = 180, pie_h = 180;
-var pie_margins = {top: 10, right: 10, bottom: 40, left: 10};
+var pie_w = 170, pie_h = 170;
+//var pie_margins = {top: 10, right: 10, bottom: 0, left: 10};
 var pie = d3.layout.pie().sort(null);
 var color1 = ["#1B5E48","#B6BFBC"];
 var color2 = ["#1B455E","#B6BFBC"];
@@ -451,7 +447,8 @@ var createPies = function(){
     var selectedTableYear = tables[year_id];
     var selectedRowAdm = selectedTableYear[adm_id-1];
     var selectedAttributes = [+selectedRowAdm[attr1], +selectedRowAdm[attr2]];
-    //console.log(selectedAttributes);
+    var tot = d3.sum(selectedAttributes);
+    var percentages = [(selectedAttributes[0]/tot)*100, (selectedAttributes[1]/tot)*100];
 
     function arcTween(a) {
       var i = d3.interpolate(this._current, a);
@@ -460,20 +457,22 @@ var createPies = function(){
         return arc(i(t));
       };
     }
-    var formatInteger = d3.format("");
+    var formatPercentage = d3.format("%");
+    console.log(percentages);
+
     pie_object.selectAll("g.arc")
-      .data(pie(selectedAttributes)).select("text").transition().duration(500)
+      .data(pie(percentages)).select("text").transition().duration(500)
       .attr("transform", function(d) {
         return "translate(" + arc.centroid(d) + ")";
       })
       .attr("text-anchor", "middle")
-      .tween("text", function(d) {
-            var i = d3.interpolate(this.textContent, d.value);
+      .styleTween("text", function(d) {
+            var i = d3.interpolateString(this.textContent, d.value + "%");
             return function(t) {
-              this.textContent = Math.round(i(t));
+              this.textContent = i(t);
             };
           });
-    pie_object.selectAll("g.arc")
+      pie_object.selectAll("g.arc")
       .data(pie(selectedAttributes)).select("path").transition().duration(500)
       .attrTween("d", arcTween);
   }
@@ -487,8 +486,8 @@ var createPies = function(){
 var createBarChart = function(){
 
   //Trend chart variables
-  var width = 400, height = 150;
-  var margins = {top: 10, right: 20, bottom: 20, left: 100};
+  var width = 250, height = 150;
+  var margins = {top: 10, right: 10, bottom: 20, left: 60};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
   var svgBarChartArea = d3.select("#barChart")
@@ -510,10 +509,38 @@ var createBarChart = function(){
   var xAxis = d3.svg.axis()
           .scale(xScale)
           .orient("bottom")
-          .ticks(8);
+          .ticks(6);
   var yAxis = d3.svg.axis()
           .scale(yScale)
-          .orient("left")
+          .orient("left");
+
+          function wrap(text, width) {
+
+            text.each(function() {
+              var text = d3.select(this);
+              var string = text.text();
+              if (string.length > 10) {
+                  var words = text.text().split(/\s+/).reverse(),
+                  word,
+                  line = [],
+                  lineNumber = -1.5,
+                  lineHeight = 1.1, // ems
+                  y = text.attr("y"),
+                  dy = parseFloat(text.attr("dy")),
+                  tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+              while (word = words.pop()) {
+                line.push(word);
+                tspan.text(line.join(" "));
+                if (tspan.node().getComputedTextLength() > width) {
+                  line.pop();
+                  tspan.text(line.join(" "));
+                  line = [word];
+                  tspan = text.append("tspan").attr("x", -10).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                }
+              }
+            }
+          });
+        }
 
   //Create bar chart
   var drawChart = function(){
@@ -544,7 +571,9 @@ var createBarChart = function(){
         .call(xAxis);
     barChart.append("g")
         .attr("class", "y axis")
-        .call(yAxis);
+        .call(yAxis)
+        .selectAll(".tick text")
+        .call(wrap, yScale.rangeBand());
     };
 
   drawChart.updateBarChart = function(adm_id, year_id){
