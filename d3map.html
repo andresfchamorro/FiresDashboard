@@ -211,6 +211,9 @@ var loadTables = function(){
                                 tables.push(data13);
                                 d3.csv("Tables/Adm1_2015.csv", function(error, data14) {
                                   tables.push(data14);
+                                    d3.csv("Tables/Adm1_2016.csv", function(error, data15) {
+                                      tables.push(data15);
+      });
       });
       });
       });
@@ -271,7 +274,7 @@ var createMap = function(){
   };
   legend.addTo(map);
 
-  d3.json("toposim-IndonesiaFires.json", function(json){
+  d3.json("toposim-IndonesiaFires2.json", function(json){
 
     function style(feature) {
       return {
@@ -347,17 +350,17 @@ var createTrendChart = function(){
   var margins = {top: 20, right: 20, bottom: 40, left: 50};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
-  var years = [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015];
+  var years = [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016];
   var svgChartArea = d3.select("#chartDiv")
                   .append("svg")
                   .attr("width", width)
                   .attr("height", height);
   var chart = svgChartArea.append("g")
                 .attr("transform","translate("+margins.left + "," + margins.top + ")");
-  var dataset = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  var dataset = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
   //Scales
   var xScale = d3.scale.ordinal()
-                .domain(d3.range(2001,2016))
+                .domain(d3.range(2001,2017))
                 .rangeRoundBands([0,chartwidth],0.3);
   var yScale = d3.scale.linear()
                 .domain([0, 1000])
@@ -366,7 +369,7 @@ var createTrendChart = function(){
   var xAxis = d3.svg.axis()
           .scale(xScale)
           .orient("bottom")
-          .ticks(15);
+          .ticks(16);
   var yAxis = d3.svg.axis()
           .scale(yScale)
           .orient("left");
@@ -410,7 +413,7 @@ var createTrendChart = function(){
 
   drawChart.updateTrendChart = function(selected_data){
     //var test = d3.values(selected_data); More efficient?
-    dataset = [selected_data.properties.F2001,selected_data.properties.F2002,selected_data.properties.F2003,selected_data.properties.F2004,selected_data.properties.F2005,selected_data.properties.F2006,selected_data.properties.F2007,selected_data.properties.F2008,selected_data.properties.F2009,selected_data.properties.F2010,selected_data.properties.F2011,selected_data.properties.F2012,selected_data.properties.F2013,selected_data.properties.F2014,selected_data.properties.F2015];
+    dataset = [selected_data.properties.F2001,selected_data.properties.F2002,selected_data.properties.F2003,selected_data.properties.F2004,selected_data.properties.F2005,selected_data.properties.F2006,selected_data.properties.F2007,selected_data.properties.F2008,selected_data.properties.F2009,selected_data.properties.F2010,selected_data.properties.F2011,selected_data.properties.F2012,selected_data.properties.F2013,selected_data.properties.F2014,selected_data.properties.F2015,selected_data.properties.F2016];
 
     yScale.domain([0, d3.max(dataset)])
 
@@ -618,6 +621,16 @@ var createBarChart = function(){
     var selectedTableYear = tables[year_id];
     var selectedRowAdm = selectedTableYear[adm_id-1];
     var selected_dataset = [+selectedRowAdm.Logging, +selectedRowAdm.OilPalm, +selectedRowAdm.WoodFiber, +selectedRowAdm.OutCon]
+    var total = d3.sum(selected_dataset);
+    var perc = [(selected_dataset[0]/total)*100,(selected_dataset[1]/total)*100,(selected_dataset[2]/total)*100,(selected_dataset[3]/total)*100];
+    console.log(perc);
+
+    /*
+    var tot = d3.sum(selectedAttributes);
+    var percentages = [(selectedAttributes[0]/tot)*100, (selectedAttributes[1]/tot)*100];
+
+
+    */
     //var test = d3.values(selected_data); More efficient?
     xScale.domain([0, d3.max(selected_dataset)]).ticks(8);
     barChart.selectAll("rect")
