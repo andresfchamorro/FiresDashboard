@@ -109,6 +109,10 @@ h4{
 	font-size: 10px;
   fill:white;
 }
+#barChart text {
+  font-size: 10px;
+  fill:black;
+}
 #dashboard{
   overflow: hidden;
   margin: auto;
@@ -528,7 +532,7 @@ var createBarChart = function(){
 
   //Trend chart variables
   var width = 250, height = 150;
-  var margins = {top: 10, right: 10, bottom: 20, left: 60};
+  var margins = {top: 10, right: 20, bottom: 20, left: 60};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
   var svgBarChartArea = d3.select("#barChart")
@@ -606,6 +610,11 @@ var createBarChart = function(){
         })
       .attr("height", yScale.rangeBand());
 
+    barChart.selectAll("text")
+      .data(dataset)
+      .enter()
+      .append("text");
+
     barChart.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + (chartheight) + ")")
@@ -625,13 +634,6 @@ var createBarChart = function(){
     var perc = [(selected_dataset[0]/total)*100,(selected_dataset[1]/total)*100,(selected_dataset[2]/total)*100,(selected_dataset[3]/total)*100];
     console.log(perc);
 
-    /*
-    var tot = d3.sum(selectedAttributes);
-    var percentages = [(selectedAttributes[0]/tot)*100, (selectedAttributes[1]/tot)*100];
-
-
-    */
-    //var test = d3.values(selected_data); More efficient?
     xScale.domain([0, d3.max(selected_dataset)]).ticks(8);
     barChart.selectAll("rect")
       .data(selected_dataset)
@@ -648,6 +650,25 @@ var createBarChart = function(){
           return xScale(d);
         })
       .attr("height", yScale.rangeBand());
+
+    barChart.selectAll("text")
+      .data(selected_dataset)
+      .transition().duration(750)
+      .attr("x", function(d, i){
+        return xScale(d);
+      })
+      .attr("y", function(d,i){
+        var x = categories[i];
+        return yScale(x) + 12;
+      })
+      .tween("text", function(d) {
+            var perc = Math.round((d/total)*100);
+            var i = d3.interpolateRound(+this.textContent.replace('%', ''), perc);
+            return function(t) {
+              this.textContent = i(t) + '%';
+            };
+          });
+
 
     //Update X axis
     barChart.select(".x.axis")
