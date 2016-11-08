@@ -22,21 +22,32 @@ body {
   position: relative;
 }
 h1{
-  color: #3B3B3B;
+  color: #424242;
   font-size: 18px;
   margin: 5px;
   text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+h2{
+  color: #424242;
+  font-size: 16px;
+  margin: 0px;
+  text-align: center;
+  font-weight: bolder;
 }
 h3{
   display: block;
   font-size: 16px;
-  margin: 10px;
+  margin: 15px;
   font-weight: normal;
 }
 h4{
   display: block;
   margin: 0px;
   text-align: center;
+  font-weight: normal;
+  font-size: 14px;
 }
 
 .background {
@@ -67,7 +78,25 @@ h4{
   padding:10px;
   background-color:transparent;
   border-radius:10px;
+  margin-left: 10px;
   /*box-shadow: 4px 4px 10px rgba(0,0,0,0.1);*/
+}
+#info2 {
+  width: 80px;
+  overflow: hidden;
+  float: left;
+}
+#info2 h2 {
+  font-size: 24px;
+  text-align: right;
+  margin-top: 5px;
+}
+
+#info3 {
+  width: 110px;
+  overflow: hidden;
+}
+#info3 h2 {
 }
 #info.hidden{
   display:none;
@@ -130,6 +159,9 @@ h4{
   display: block;
   margin: auto;
 }
+
+
+
   </style>
 </head>
 <body>
@@ -158,25 +190,29 @@ h4{
 
 <div id="dashboard">
   <div id="left">
-    <h3>Click on a region to view the trend of fires</h3>
+    <h3>Click on a province to view the trend of fires since 2001</h3>
     <div id="mapDiv"></div>
-    <h3>Hover over a year to analyze where fires happen</h3>
+    <h3>Hover over a year to analyze where fires happened</h3>
     <div id="chartDiv"></div>
   </div>
   <div id="right">
     <div id="info">
-      <h1 id="number"><h1>
       <h1 id="place"></h1>
-      <h1 id="year"></h1>
+      <div id="info2">
+        <h2 id="number"><h2>
+      </div>
+      <div id="info3">
+        <h2 id="year"></h2>
+      </div>
     </div>
     <div id="pieDiv1">
-      <h4>Protected vs Non-Protected</h4>
+      <h4>Fire Alerts in <span style="color:#1B5E48; font-weight:bold;">Protected Areas</span></h4>
     </div>
     <div id="pieDiv2">
-      <h4>Peat vs Non-Peat</h4>
+      <h4>Fire Alerts on <span style="color:#1B455E; font-weight:bold;">Peatland</span></h4>
     </div>
     <div id="barChart">
-      <h4>Fires in Concession Areas</h4>
+      <h4>Fires Alerts by Land Use Area</h4>
     </div>
   </div>
 </div>
@@ -320,8 +356,15 @@ var createMap = function(){
           //update info
           var info = d3.select("#info");
           info.select("#number").text(formatLong(layer.feature.properties[idname]));
-          //console.log(selected_year);
-          //console.log(layer.feature.properties[idname]);
+          /*
+          info.select("#number").transition().duration(200)
+            .tween("text", function(){
+              var i = d3.interpolateRound(+this.textContent, layer.feature.properties[idname]);
+              return function(t) {
+                this.textContent = i(t);
+              }
+            });
+            */
         }
         layer.setStyle({
           fillColor: 'rgba(145,145,145,0.2)',
@@ -330,7 +373,7 @@ var createMap = function(){
         map.fitBounds(layer.getBounds());
         //update info
         var info = d3.select("#info");
-        info.select("#place").text("Fires in " + layer.feature.properties.NAME_1);
+        info.select("#place").text(layer.feature.properties.NAME_1);
     }
 
     function hover(e) {
@@ -351,7 +394,7 @@ var createTrendChart = function(){
 
   //Trend chart variables
   var width = 550, height = 250;
-  var margins = {top: 20, right: 20, bottom: 40, left: 50};
+  var margins = {top: 15, right: 20, bottom: 40, left: 50};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
   var years = [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016];
@@ -404,7 +447,16 @@ var createTrendChart = function(){
         //update info
         var info = d3.select("#info");
         info.select("#number").text(formatLong(d));
-        info.select("#year").text("in " + (i+2001));
+        /*
+        info.select("#number").transition().duration(200)
+          .tween("text", function(){
+            var i = d3.interpolateRound(+this.textContent, d);
+            return function(t) {
+              this.textContent = i(t);
+            }
+          });
+        */
+        info.select("#year").text("Fire Alerts in " + (i+2001));
       });
     chart.append("g")
         .attr("class", "x axis")
@@ -450,7 +502,7 @@ var formatLong = d3.format(",d");
 //Tables and variables for pie charts
 var mockdataset = [0,50];
 var selected_id, selected_year;
-var pie_w = 160, pie_h = 160;
+var pie_w = 150, pie_h = 150;
 //var pie_margins = {top: 10, right: 10, bottom: 0, left: 10};
 var pie = d3.layout.pie().sort(null);
 var color1 = ["#1B5E48","#B6BFBC"];
@@ -613,7 +665,14 @@ var createBarChart = function(){
     barChart.selectAll("text")
       .data(dataset)
       .enter()
-      .append("text");
+      .append("text")
+      .attr("x", function(d, i){
+        return xScale(d);
+      })
+      .attr("y", function(d,i){
+        var x = categories[i];
+        return yScale(x) + 12;
+      });
 
     barChart.append("g")
         .attr("class", "x axis")
