@@ -410,7 +410,7 @@ var createTrendChart = function(){
                 .domain(d3.range(2001,2017))
                 .rangeRoundBands([0,chartwidth],0.3);
   var yScale = d3.scale.linear()
-                .domain([0, 1000])
+                .domain([0, 30000])
                 .range([chartheight, 0]);
   //Define x,y axis
   var xAxis = d3.svg.axis()
@@ -419,7 +419,8 @@ var createTrendChart = function(){
           .ticks(16);
   var yAxis = d3.svg.axis()
           .scale(yScale)
-          .orient("left");
+          .orient("left")
+          .ticks(7);
 
   //Create bar chart
   var drawChart = function(){
@@ -471,7 +472,7 @@ var createTrendChart = function(){
     //var test = d3.values(selected_data); More efficient?
     dataset = [selected_data.properties.F2001,selected_data.properties.F2002,selected_data.properties.F2003,selected_data.properties.F2004,selected_data.properties.F2005,selected_data.properties.F2006,selected_data.properties.F2007,selected_data.properties.F2008,selected_data.properties.F2009,selected_data.properties.F2010,selected_data.properties.F2011,selected_data.properties.F2012,selected_data.properties.F2013,selected_data.properties.F2014,selected_data.properties.F2015,selected_data.properties.F2016];
 
-    yScale.domain([0, d3.max(dataset)])
+    //yScale.domain([0, d3.max(dataset)])
 
     chart.selectAll("rect")
       .data(dataset)
@@ -600,7 +601,7 @@ var createBarChart = function(){
                 .domain(categories)
                 .rangeRoundBands([0,chartheight],0.4);
   var xScale = d3.scale.linear()
-                .domain([0, 1000])
+                .domain([0, 70])
                 .range([0, chartwidth]);
   //Define x,y axis
   var xAxis = d3.svg.axis()
@@ -693,9 +694,9 @@ var createBarChart = function(){
     var perc = [(selected_dataset[0]/total)*100,(selected_dataset[1]/total)*100,(selected_dataset[2]/total)*100,(selected_dataset[3]/total)*100];
     console.log(perc);
 
-    xScale.domain([0, d3.max(selected_dataset)]).ticks(8);
+    //xScale.domain([0, d3.max(selected_dataset)]).ticks(8);
     barChart.selectAll("rect")
-      .data(selected_dataset)
+      .data(perc)
       .transition()
       .duration(750)
       .attr("x", function(d, i){
@@ -711,7 +712,7 @@ var createBarChart = function(){
       .attr("height", yScale.rangeBand());
 
     barChart.selectAll("text")
-      .data(selected_dataset)
+      .data(perc)
       .transition().duration(750)
       .attr("x", function(d, i){
         return xScale(d);
@@ -721,7 +722,7 @@ var createBarChart = function(){
         return yScale(x) + 12;
       })
       .tween("text", function(d) {
-            var perc = Math.round((d/total)*100);
+            var perc = d;
             var i = d3.interpolateRound(+this.textContent.replace('%', ''), perc);
             return function(t) {
               this.textContent = i(t) + '%';
