@@ -17,18 +17,9 @@
     src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-BoldCond.otf) format("opentype");
     font-weight: bold;
 }
-@font-face {
-    font-family: "Firas";
-    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/FiraSans-Regular.otf) format("opentype");
-    font-weight: normal;
-}
 body {
   font-family: "Arial MT Std", Helvetica, sans-serif, Arial;
   position: relative;
-}
-p{
-  font-family: "Firas";
-  text-align: left;
 }
 h1{
   color: #424242;
@@ -121,7 +112,14 @@ h5{
   margin:0px;
   font-size:12px;
 }
-
+p {
+  text-align: left;
+}
+.line {
+				stroke:#D68178;
+				stroke-width: 1;
+				fill: none;
+			}
 #chartDiv rect{
   fill:#D68178;
 }
@@ -197,7 +195,6 @@ h5{
 }
 .shorter {
   width: 450px;
-  font-family: "Firas";
 }
 
 
@@ -240,14 +237,13 @@ h5{
     <div id="mapDiv"></div>
     <p>The fires in 2015 were densely concentrated in South Sumatra and Central Kalimantan, which are also the provinces with the highest amount of fires over the past 15 years. The graph below charts the continuing occurrence of fire alerts in Central Kalimantan (more than 30,000 alerts in 2006 and 2015). Click on any other province in the map to view the trend for that province. South Sumatra also shows a long history of fire activity, though not as high in intensity as Kalimantan.
     </p>
-    <h4> Fire Alerts in </h4>
     <div id="chartDiv"></div>
-      <div id="pieDiv2">
-        <h4>Fire Alerts on <span style="color:#1B455E; font-weight:bold;">Peatland</span></h4>
-      </div>
-    <p>
-      What is driving the high frequency of fires in these two provinces? To begin with, they share a high concentration of flammable peatlands, which will not burn unless drained first, confirming the link between fires and agricultural expansion. In 2015, over 60% of fires in Central Kalimantan and South Sumatra were located in peatlands.
-    </p>
+      <p class="shorter">
+        <div id="pieDiv2">
+          <h4>Fire Alerts on <span style="color:#1B455E; font-weight:bold;">Peatland</span></h4>
+        </div>
+        What is driving the high frequency of fires in these two provinces? To begin with, they share a high concentration of flammable peatlands, which will not burn unless drained first, confirming the link between fires and agricultural expansion. In 2015, over 60% of fires in Central Kalimantan and South Sumatra were located in peatlands.
+      </p>
     <p>When looking at what commodities are driving the fires, the answer varies across different provinces. The charts below add contextual information for fires in Central Kalimantan. Every year since 2001, the majority of alerts detected in this province were located inside oil palm plantations. The charts can be updated by clicking on another province, and hovering over a different year. In South Sumatra, the key commodities driving fires are pulpwood and wood fiber. Up to 50% of fire alerts from 2015 fell inside wood fiber concession areas.
     </p>
   <div id="right">
@@ -326,8 +322,7 @@ var loadTables = function(){
       });
 }
 
-var topoAdm1;
-var init;
+var LineData = [];
 
 var createMap = function(){
 
@@ -385,13 +380,11 @@ var createMap = function(){
     }
 
     var topoAdm1Data = topojson.feature(json, json.objects.IndonesiaFires);
-    console.log(topoAdm1Data.features[14]);
-    init = topoAdm1Data.features[14];
-    topoAdm1 = new L.TopoJSON(topoAdm1Data, {style:style});
-//  init = topoAdm1._layers[737].feature;
 
+    var topoAdm1 = new L.TopoJSON(topoAdm1Data, {style:style});
     topoAdm1.addTo(map);
     topoAdm1.eachLayer(handleLayer);
+
 
     function handleLayer(layer){
 
@@ -400,16 +393,13 @@ var createMap = function(){
       layer.on({
         click : clicked,
         mouseover: hover,
-      //  mouseout: reset
+        mouseout: reset
       });
     }
-
-    var old;
 
     function clicked(e) {
         //Change bar chart and also selected adm1 id
         var layer = e.target
-        //console.log(layer);
         trendChart.updateTrendChart(layer.feature);
         selected_id = layer.feature.properties.ID;
         if (selected_year) {
@@ -430,14 +420,10 @@ var createMap = function(){
             });
             */
         }
-        if (old) {
-            topoAdm1.resetStyle(old);
-        }
         layer.setStyle({
           fillColor: 'rgba(145,145,145,0.2)',
-          weight: 0.5,
+          weight: 0.3,
         })
-        old = layer;
         map.fitBounds(layer.getBounds());
         //update info
         var info = d3.select("#info");
@@ -445,18 +431,15 @@ var createMap = function(){
     }
 
     function hover(e) {
-/*
         var layer = e.target;
         layer.setStyle({
           fillColor: 'rgba(145,145,145,0.2)',
         });
-        */
     }
     function reset(e) {
-      /*
       var layer = e.target;
       topoAdm1.resetStyle(layer);
-    */}
+    }
 
 });
 }
@@ -475,19 +458,35 @@ var createTrendChart = function(){
                   .attr("height", height);
   var chart = svgChartArea.append("g")
                 .attr("transform","translate("+margins.left + "," + margins.top + ")");
-  var dataset = [2400,23394,8431,14946,5719,30210,2941,1480,15453,443,6099,6076,3670,13401,30162,582];
+  var dataset = [20000,2220,2130,3323,12323,2323,12325,3535,55,75650,0,0,0,0,0,0];
   //Scales
+  var xScaleLinear = d3.scale.linear().domain([2001,2016]).range([0, chartwidth]);
+/*
   var xScale = d3.scale.ordinal()
                 .domain(d3.range(2001,2017))
                 .rangeRoundBands([0,chartwidth],0.4);
+*/
   var yScale = d3.scale.linear()
                 .domain([0, 30000])
                 .range([chartheight, 0]);
   //Define x,y axis
+  var xAxisLine = d3.svg.axis().scale(xScaleLinear).orient("bottom").ticks(16);
+
+  var line = d3.svg.line()
+    .x(function(d,i) {
+      return xScaleLinear(i+2001);
+    })
+    .y(function(d){
+      return yScale(d);
+    })
+
+/*
   var xAxis = d3.svg.axis()
           .scale(xScale)
           .orient("bottom")
           .ticks(16);
+*/
+
   var yAxis = d3.svg.axis()
           .scale(yScale)
           .orient("left")
@@ -495,45 +494,11 @@ var createTrendChart = function(){
 
   //Create bar chart
   var drawChart = function(){
-    chart.selectAll("rect")
-      .data(dataset)
-      .enter()
-      .append("rect")
-      .attr("x", function(d, i){
-        return xScale(2001+i);
-      })
-      .attr("y", function(d){
-        return yScale(d);
-      })
-      .attr("width", xScale.rangeBand())
-      .attr("height", function(d){
-        return chartheight - yScale(d);
-      })
-      .on("mouseover", function(d,i){
-        d3.selectAll("rect").classed("selected", false);
-        d3.select(this).attr("class", "selected");
-        selected_year = i;
-        pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
-        pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
-        barChart.updateBarChart(selected_id, selected_year);
-        //update info
-        var info = d3.select("#info");
-        info.select("#number").text(formatLong(d));
-        /*
-        info.select("#number").transition().duration(200)
-          .tween("text", function(){
-            var i = d3.interpolateRound(+this.textContent, d);
-            return function(t) {
-              this.textContent = i(t);
-            }
-          });
-        */
-        info.select("#year").text("Fire Alerts in " + (i+2001));
-      });
+    chart.append("path").attr("class", "line").attr("d", line(dataset));
     chart.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + (chartheight) + ")")
-        .call(xAxis);
+        .call(xAxisLine);
     chart.append("g")
         .attr("class", "y axis")
         .call(yAxis);
@@ -541,7 +506,6 @@ var createTrendChart = function(){
 
   drawChart.updateTrendChart = function(selected_data){
     //var test = d3.values(selected_data); More efficient?
-    console.log(selected_data)
     dataset = [selected_data.properties.F2001,selected_data.properties.F2002,selected_data.properties.F2003,selected_data.properties.F2004,selected_data.properties.F2005,selected_data.properties.F2006,selected_data.properties.F2007,selected_data.properties.F2008,selected_data.properties.F2009,selected_data.properties.F2010,selected_data.properties.F2011,selected_data.properties.F2012,selected_data.properties.F2013,selected_data.properties.F2014,selected_data.properties.F2015,selected_data.properties.F2016];
 
     //yScale.domain([0, d3.max(dataset)])
@@ -551,12 +515,12 @@ var createTrendChart = function(){
       .transition()
       .duration(750)
       .attr("x", function(d, i){
-        return xScale(2001+i);
+        return xScaleLinear(2001+i);
       })
       .attr("y", function(d){
         return yScale(d);
       })
-      .attr("width", xScale.rangeBand())
+      .attr("width", xScaleLinear.rangeBand())
       .attr("height", function(d){
         return chartheight - yScale(d);
       });
@@ -574,8 +538,7 @@ var createTrendChart = function(){
 var formatLong = d3.format(",d");
 //Tables and variables for pie charts
 var mockdataset = [0,50];
-var selected_id = 15;
-var selected_year;
+var selected_id, selected_year;
 var pie_w = 150, pie_h = 150;
 //var pie_margins = {top: 10, right: 10, bottom: 0, left: 10};
 var pie = d3.layout.pie().sort(null);
