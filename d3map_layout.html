@@ -310,7 +310,7 @@ var loadTables = function(){
                                 tables.push(data13);
                                 d3.csv("Tables/Adm1_2015.csv", function(error, data14) {
                                   tables.push(data14);
-                                    d3.csv("Tables/Adm1_2016.csv", function(error, data15) {
+                                    d3.csv("Tables/Adm1_2016Dec.csv", function(error, data15) {
                                       tables.push(data15);
                                       updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
                                       updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
