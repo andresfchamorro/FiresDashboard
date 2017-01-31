@@ -243,7 +243,7 @@ h5{
     <p>The fires in 2015 were densely concentrated in South Sumatra and Central Kalimantan, which are also the provinces with the highest amount of fires over the past 15 years. The graph below charts the continuing occurrence of fire alerts in Central Kalimantan (more than 30,000 alerts in 2006 and 2015). Click on any other province in the map to view the trend for that province. South Sumatra also shows a long history of fire activity, though not as high in intensity as Kalimantan.
     </p>
     <div id="info">
-      <h3>Fire Alerts in <span style="font-weight:bold" id="place">Kalimantan Tengah</span></h3>
+      <h3><span id="number">30162</span> Fire Alerts in <span style="font-weight:bold" id="place">Kalimantan Tengah</span>, <span id="year">2015</span></h3>
     </div>
     <div id="chartDiv"></div>
       <div id="pieDiv2">
@@ -428,16 +428,16 @@ var createMap = function(){
           var idname = "F" + (selected_year+2001);
           //update info
           var info = d3.select("#info");
-          info.select("#number").text(formatLong(layer.feature.properties[idname]));
-          /*
-          info.select("#number").transition().duration(200)
+          //info.select("#number").text(formatLong(layer.feature.properties[idname]));
+
+          info.select("#number").transition().duration(500)
             .tween("text", function(){
               var i = d3.interpolateRound(+this.textContent, layer.feature.properties[idname]);
               return function(t) {
                 this.textContent = i(t);
               }
             });
-            */
+
         }
         if (old) {
             topoAdm1.resetStyle(old);
@@ -532,17 +532,18 @@ var createTrendChart = function(){
         updateBarChart(svgBarChartArea,selected_id, selected_year);
         //update info
         var info = d3.select("#info");
-        info.select("#number").text(formatLong(d));
-        /*
-        info.select("#number").transition().duration(200)
+        console.log(d);
+        //info.select("#number").text(formatLong(d));
+
+        info.select("#number").transition().duration(500)
           .tween("text", function(){
             var i = d3.interpolateRound(+this.textContent, d);
             return function(t) {
               this.textContent = i(t);
             }
           });
-        */
-        info.select("#year").text("Fire Alerts in " + (i+2001));
+
+        info.select("#year").text(i+2001);
       });
     chart.append("g")
         .attr("class", "x axis")
