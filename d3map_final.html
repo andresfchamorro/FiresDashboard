@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link
+      rel="stylesheet"
+      href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"
+  />
+  <style>
+@font-face {
+    font-family: "Arial MT Std";
+    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-LightCond.otf) format("opentype");
+    font-weight: normal;
+}
+@font-face {
+    font-family: "Arial MT Std";
+    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-BoldCond.otf) format("opentype");
+    font-weight: bold;
+}
+@font-face {
+    font-family: "Firas";
+    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/FiraSans-Regular.otf) format("opentype");
+    font-weight: normal;
+}
+body {
+  font-family: "Arial MT Std", Helvetica, sans-serif, Arial;
+  position: relative;
+}
+p{
+  font-family: "Firas";
+  text-align: justify;
+}
+h1{
+  color: #424242;
+  font-size: 18px;
+  margin: 5px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+h2{
+  color: #424242;
+  font-size: 20px;
+  margin: 0px;
+  text-align: center;
+  font-weight: bolder;
+}
+h3{
+  display: block;
+  text-align: center;
+  font-size: 18px;
+  margin: 15px;
+  font-weight: normal;
+}
+h4{
+  display: block;
+  margin: 0px;
+  text-align: center;
+  font-weight: normal;
+  font-size: 14px;
+}
+h5{
+  display: inline;
+  margin: 0px;
+  text-align: center;
+  font-weight: normal;
+  font-size: 14px;
+}
+
+.background {
+  fill: none;
+  pointer-events: all;
+}
+.mesh {
+  fill: none;
+  stroke: #fff;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: darkgray;
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+.axis text {
+  font-size: 11px;
+}
+#info{
+  z-index: 1;
+  /*position:relative;
+  width:200px;
+  height:80px;
+  padding:10px;
+  background-color:transparent;
+  border-radius:10px;
+  margin-left: 10px;
+  */
+}
+
+#info2 {
+  width: 80px;
+  overflow: hidden;
+  float: left;
+}
+#info2 h2 {
+  font-size: 24px;
+  text-align: right;
+  margin-top: 5px;
+}
+
+#info3 {
+  width: 110px;
+  overflow: hidden;
+}
+#info3 h2 {
+}
+#info.hidden{
+  display:none;
+}
+#info p{
+  margin:0px;
+  font-size:12px;
+}
+
+#chartDiv rect{
+  fill:#D68178;
+}
+#chartDiv rect.selected{
+  fill:darkred;
+}
+#chartDiv svg {
+}
+
+#box {
+  overflow: hidden;
+  margin: auto;
+}
+#box div{
+    display: inline-block;
+}
+#mapDiv {
+  margin: auto;
+  width: 550px;
+  height: 215px;
+  border: 1px dashed darkgray;
+}
+
+#chartDiv {
+  margin: auto;
+  width: 640px;
+}
+
+#pieDiv1 path {
+  stroke: #fff;
+}
+#pieDiv1 text {
+	font-size: 10px;
+  fill:white;
+}
+#pieDiv2 path {
+  stroke: #fff;
+}
+#pieDiv2 text {
+	font-size: 10px;
+  fill:white;
+}
+#barChart text {
+  font-size: 10px;
+  fill:black;
+}
+#dashboard{
+  overflow: hidden;
+  margin: auto;
+  width: 640px;
+}
+#left{
+  width: 550px;
+  float: left;
+}
+#right{
+  overflow: hidden;
+  margin: auto;
+  width: 570px;
+}
+#right div {
+    display: inline-block;
+}
+#right svg {
+  margin: auto;
+}
+#pieDiv1 {
+  float: right;
+}
+#pieDiv2 {
+  float: left;
+}
+#pieDiv1 {
+  float: right;
+}
+.indent {
+  margin-left: 50px;
+  margin-right: 50px;
+}
+.shorter {
+  width: 450px;
+  font-family: "Firas";
+}
+  </style>
+</head>
+<body>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://d3js.org/topojson.v1.min.js"></script>
+  <script src="http://d3js.org/d3-tile.v0.0.min.js"></script>
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/leaflet.esri/1.0.4/esri-leaflet.js"></script>
+  <script>
+    // Copyright (c) 2013 Ryan Clark
+    // https://gist.github.com/rclark/5779673
+    L.TopoJSON = L.GeoJSON.extend({
+      addData: function(jsonData) {
+        if (jsonData.type === "Topology") {
+          for (key in jsonData.objects) {
+            geojson = topojson.feature(jsonData, jsonData.objects[key]);
+            L.GeoJSON.prototype.addData.call(this, geojson);
+          }
+        }
+        else {
+          L.GeoJSON.prototype.addData.call(this, jsonData);
+        }
+      }
+    });
+  </script>
+
+<div id="dashboard">
+    <div id="info">
+      <h3><span id="number">30162</span> Fire Alerts in <span style="font-weight:bold" id="place">Kalimantan Tengah</span>, <span id="year">2015</span></h3>
+    </div>
+    <div id="mapDiv"></div>
+    <div id="chartDiv"></div>
+  <div id="right">
+    <div id="pieDiv2">
+      <h4>Fire Alerts on <span style="color:#1B455E; font-weight:bold;">Peatland</span></h4>
+    </div>
+    <div id="barChart">
+      <h4>Fires Alerts by Land Use Area</h4>
+    </div>
+    <div id="pieDiv1">
+      <h4>Fire Alerts in <span style="color:#1B5E48; font-weight:bold;">Protected Areas</span></h4>
+    </div>
+  </div>
+
+<script>
+
+var tables = [];
+var loadTables = function(){
+  d3.csv("Tables/Adm1_2001.csv", function(error, data0) {
+      tables.push(data0);
+      d3.csv("Tables/Adm1_2002.csv", function(error, data1) {
+        tables.push(data1);
+        d3.csv("Tables/Adm1_2003.csv", function(error, data2) {
+          tables.push(data2);
+          d3.csv("Tables/Adm1_2004.csv", function(error, data3) {
+            tables.push(data3);
+            d3.csv("Tables/Adm1_2005.csv", function(error, data4) {
+              tables.push(data4);
+              d3.csv("Tables/Adm1_2006.csv", function(error, data5) {
+                tables.push(data5);
+                d3.csv("Tables/Adm1_2007.csv", function(error, data6) {
+                  tables.push(data6);
+                  d3.csv("Tables/Adm1_2008.csv", function(error, data7) {
+                    tables.push(data7);
+                    d3.csv("Tables/Adm1_2009.csv", function(error, data8) {
+                      tables.push(data8);
+                      d3.csv("Tables/Adm1_2010.csv", function(error, data9) {
+                        tables.push(data9);
+                        d3.csv("Tables/Adm1_2011.csv", function(error, data10) {
+                          tables.push(data10);
+                          d3.csv("Tables/Adm1_2012.csv", function(error, data11) {
+                            tables.push(data11);
+                            d3.csv("Tables/Adm1_2013.csv", function(error, data12) {
+                              tables.push(data12);
+                              d3.csv("Tables/Adm1_2014.csv", function(error, data13) {
+                                tables.push(data13);
+                                d3.csv("Tables/Adm1_2015.csv", function(error, data14) {
+                                  tables.push(data14);
+                                    d3.csv("Tables/Adm1_2016.csv", function(error, data15) {
+                                      tables.push(data15);
+                                      updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+                                      updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+                                      updateBarChart(svgBarChartArea,selected_id,selected_year);
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+      });
+
+
+}
+
+var topoAdm1;
+var init;
+
+var createMap = function(){
+
+//Variables
+  var active = d3.select("null");
+  mapLink = '<a href="http://52.200.102.67/osm_tiles"></a>';
+
+//Layers
+  var gray = L.esri.basemapLayer("Gray",{opacity: 0.5});
+  var kd2015 = L.tileLayer(
+          'http://wri-tiles.s3.amazonaws.com/fires_idn/2015/{z}/{x}/{y}.png', {
+          attribution: '&copy; ' + mapLink + ' Contributors',
+          maxZoom: 22,
+          });
+  var kdAllYears = L.tileLayer(
+          'http://wri-tiles.s3.amazonaws.com/fires_idn/all/{z}/{x}/{y}.png', {
+          attribution: '&copy; ' + mapLink + ' Contributors',
+          maxZoom: 22,
+        });
+
+  map = new L.map('mapDiv', {
+            maxZoom:8,
+            minZoom:4,
+            center:[-3, 118],
+            zoom: 4,
+            layers: [gray, kd2015]
+          });
+
+  L.esri.basemapLayer("GrayLabels", {opacity: 0.5}).addTo(map).bringToFront();
+  var overlayHeatmap = {
+    "Heatmap: 2015": kd2015,
+    "Heatmap: Last 15 Years": kdAllYears
+  };
+
+  L.control.layers(overlayHeatmap).addTo(map);
+
+  var legend = L.control({position:'bottomleft'});
+  legend.onAdd = function (map){
+    var div = L.DomUtil.create('div', 'legend');
+    div.innerHTML += '<img src="legend.png" alt="legend" >';
+    return div;
+  };
+  legend.addTo(map);
+
+  d3.json("toposim-IndonesiaFires3.json", function(json){
+
+    function style(feature) {
+      return {
+        fillColor : 'transparent',
+        fillOpacity: 1,
+        color:'#555',
+        weight:0.3,
+        opacity:1
+      };
+    }
+
+    var topoAdm1Data = topojson.feature(json, json.objects.IndonesiaFires);
+    init = topoAdm1Data.features[14];
+    topoAdm1 = new L.TopoJSON(topoAdm1Data, {style:style});
+//  init = topoAdm1._layers[737].feature;
+
+    topoAdm1.addTo(map);
+    topoAdm1.eachLayer(handleLayer);
+
+    function handleLayer(layer){
+
+    //  layer.setStyle(style());
+
+      layer.on({
+        click : clicked,
+        mouseover: hover,
+      //  mouseout: reset
+      });
+    }
+
+    var old;
+
+    function clicked(e) {
+        //Change bar chart and also selected adm1 id
+        var layer = e.target
+        //console.log(layer);
+        trendChart.updateTrendChart(layer.feature);
+        selected_id = layer.feature.properties.ID;
+        if (selected_year) {
+          updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+          updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+          updateBarChart(svgBarChartArea,selected_id, selected_year);
+          var idname = "F" + (selected_year+2001);
+          //update info
+          var info = d3.select("#info");
+          //info.select("#number").text(formatLong(layer.feature.properties[idname]));
+
+          info.select("#number").transition().duration(500)
+            .tween("text", function(){
+              var i = d3.interpolateRound(+this.textContent, layer.feature.properties[idname]);
+              return function(t) {
+                this.textContent = i(t);
+              }
+            });
+
+        }
+        if (old) {
+            topoAdm1.resetStyle(old);
+        }
+        layer.setStyle({
+          fillColor: 'rgba(145,145,145,0.2)',
+          weight: 0.5,
+        })
+        old = layer;
+        map.fitBounds(layer.getBounds());
+        //update info
+        var info = d3.select("#info");
+        info.select("#place").text(layer.feature.properties.NAME_1);
+    }
+
+    function hover(e) {
+/*
+        var layer = e.target;
+        layer.setStyle({
+          fillColor: 'rgba(145,145,145,0.2)',
+        });
+        */
+    }
+    function reset(e) {
+      /*
+      var layer = e.target;
+      topoAdm1.resetStyle(layer);
+    */}
+
+});
+}
+
+var createTrendChart = function(){
+
+  //Trend chart variables
+  var width = 600, height = 200;
+  var margins = {top: 15, right: 20, bottom: 40, left: 100};
+  var chartwidth = width - margins.left - margins.right;
+  var chartheight = height - margins.top - margins.bottom;
+  var years = [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016];
+  var svgChartArea = d3.select("#chartDiv")
+                  .append("svg")
+                  .attr("width", width)
+                  .attr("height", height);
+  var chart = svgChartArea.append("g")
+                .attr("transform","translate("+margins.left + "," + margins.top + ")");
+  var dataset = [2400,23394,8431,14946,5719,30210,2941,1480,15453,443,6099,6076,3670,13401,30162,972];
+  //Scales
+  var xScale = d3.scale.ordinal()
+                .domain(d3.range(2001,2017))
+                .rangeRoundBands([0,chartwidth],0.4);
+  var yScale = d3.scale.linear()
+                .domain([0, 30000])
+                .range([chartheight, 0]);
+  //Define x,y axis
+  var xAxis = d3.svg.axis()
+          .scale(xScale)
+          .orient("bottom")
+          .ticks(16);
+  var yAxis = d3.svg.axis()
+          .scale(yScale)
+          .orient("left")
+          .ticks(7);
+
+  //Create bar chart
+  var drawChart = function(){
+    chart.selectAll("rect")
+      .data(dataset)
+      .enter()
+      .append("rect")
+      .attr("x", function(d, i){
+        return xScale(2001+i);
+      })
+      .attr("y", function(d){
+        return yScale(d);
+      })
+      .attr("width", xScale.rangeBand())
+      .attr("height", function(d){
+        return chartheight - yScale(d);
+      })
+      .attr("class", function(d,i){
+        if (i == 14) {
+          return "selected";
+        }
+      })
+      .on("mouseover", function(d,i){
+        d3.selectAll("rect").classed("selected", false);
+        d3.select(this).attr("class", "selected");
+        selected_year = i;
+        updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+        updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+        updateBarChart(svgBarChartArea,selected_id, selected_year);
+        //update info
+        var info = d3.select("#info");
+        //console.log(d);
+        //info.select("#number").text(formatLong(d));
+
+        info.select("#number").transition().duration(500)
+          .tween("text", function(){
+            var i = d3.interpolateRound(+this.textContent, d);
+            return function(t) {
+              this.textContent = i(t);
+            }
+          });
+
+        info.select("#year").text(i+2001);
+
+      });
+    chart.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + (chartheight) + ")")
+        .call(xAxis);
+    chart.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+    }
+
+  drawChart.updateTrendChart = function(selected_data){
+    //var test = d3.values(selected_data); More efficient?
+
+    dataset = [selected_data.properties.F2001,selected_data.properties.F2002,selected_data.properties.F2003,selected_data.properties.F2004,selected_data.properties.F2005,selected_data.properties.F2006,selected_data.properties.F2007,selected_data.properties.F2008,selected_data.properties.F2009,selected_data.properties.F2010,selected_data.properties.F2011,selected_data.properties.F2012,selected_data.properties.F2013,selected_data.properties.F2014,selected_data.properties.F2015,selected_data.properties.F2016];
+
+    //yScale.domain([0, d3.max(dataset)])
+
+    chart.selectAll("rect")
+      .data(dataset)
+      .transition()
+      .duration(750)
+      .attr("x", function(d, i){
+        return xScale(2001+i);
+      })
+      .attr("y", function(d){
+        return yScale(d);
+      })
+      .attr("width", xScale.rangeBand())
+      .attr("height", function(d){
+        return chartheight - yScale(d);
+      });
+
+    //Update Y axis
+    chart.select(".y.axis")
+        .transition()
+        .duration(750)
+      .call(yAxis);
+    };
+  drawChart();
+  return drawChart;
+}
+
+var formatLong = d3.format(",d");
+//Tables and variables for pie charts
+var mockdataset = [0,50];
+var selected_id = 15;
+var selected_year = 14;
+var pie_w = 140, pie_h = 140;
+//var pie_margins = {top: 10, right: 10, bottom: 0, left: 10};
+var pie = d3.layout.pie().sort(null);
+var color1 = ["#1B5E48","#B6BFBC"];
+var color2 = ["#1B455E","#B6BFBC"];
+var color3 = ["#BFA2A7", "#ADBFA2", "#A2A3BF", "#B6BFBC"];
+var outerRadius = pie_w / 2;
+var innerRadius = 0;
+var arc = d3.svg.arc()
+                .innerRadius(innerRadius)
+                .outerRadius(outerRadius-10);
+var svgPie1 = d3.select("#pieDiv1")
+                .append("svg")
+                .attr("width", pie_w)
+                .attr("height", pie_h);
+var svgPie2 = d3.select("#pieDiv2")
+                .append("svg")
+                .attr("width", pie_w)
+                .attr("height", pie_h);
+
+                var updatePie = function(pie_object,adm_id,year_id,attr1,attr2) {
+                 var selectedTableYear = tables[year_id];
+                 var selectedRowAdm = selectedTableYear[adm_id-1];
+                 var selectedAttributes = [+selectedRowAdm[attr1], +selectedRowAdm[attr2]];
+                 var tot = d3.sum(selectedAttributes);
+                 var percentages = [(selectedAttributes[0]/tot)*100, (selectedAttributes[1]/tot)*100];
+
+                 function arcTween(a) {
+                   var i = d3.interpolate(this._current, a);
+                   this._current = i(0);
+                   return function(t) {
+                     return arc(i(t));
+                   };
+                 }
+
+                 pie_object.selectAll("g.arc")
+                   .data(pie(percentages)).select("text").transition().duration(750)
+                   .attr("transform", function(d) {
+                     return "translate(" + arc.centroid(d) + ")";
+                   })
+                   .attr("text-anchor", "middle")
+                   .tween("text", function(d) {
+                         var i = d3.interpolateRound(+this.textContent.replace('%', ''), d.value);
+                         return function(t) {
+                           this.textContent = i(t) + '%';
+                         };
+                       });
+                   pie_object.selectAll("g.arc")
+                   .data(pie(selectedAttributes)).select("path").transition().duration(750)
+                   .attrTween("d", arcTween);
+                }
+
+var createPies = function(){
+
+  var drawPie = function(pie_object, color){
+
+    var pieArcs = pie_object.selectAll("g.arc")
+                  .data(pie(mockdataset))
+                  .enter()
+                  .append("g")
+                  .attr("class","arc")
+                  .attr("transform", "translate(" + outerRadius + ", " + outerRadius + ")");
+    pieArcs.append("path")
+                  .each(function(d) { this._current = d; })
+                  .attr("d",arc)
+                  .attr("fill", function(d, i) {
+                    return color[i];
+                  });
+    pieArcs.append("text");
+
+   }
+
+
+
+  drawPie(svgPie1, color1);
+  drawPie(svgPie2, color2);
+
+  return drawPie;
+
+}
+
+var updateBarChart = function(bar_object,adm_id,year_id){
+  var selectedTableYear = tables[year_id];
+  var selectedRowAdm = selectedTableYear[adm_id-1];
+  var selected_dataset = [+selectedRowAdm.Logging, +selectedRowAdm.OilPalm, +selectedRowAdm.WoodFiber, +selectedRowAdm.OutCon]
+  var total = d3.sum(selected_dataset);
+  var perc = [(selected_dataset[0]/total)*100,(selected_dataset[1]/total)*100,(selected_dataset[2]/total)*100,(selected_dataset[3]/total)*100];
+  //console.log(perc);
+
+  //xScale.domain([0, d3.max(selected_dataset)]).ticks(8);
+  bar_object.selectAll("rect")
+    .data(perc)
+    .transition()
+    .duration(750)
+    .attr("x", function(d, i){
+      return xScale(0);
+    })
+    .attr("y", function(d,i){
+      var x = categories[i];
+      return yScale(x);
+    })
+    .attr("width", function(d){
+        return xScale(d);
+      })
+    .attr("height", yScale.rangeBand());
+
+  bar_object.selectAll("text")
+    .data(perc)
+    .transition().duration(750)
+    .attr("x", function(d, i){
+      return xScale(d);
+    })
+    .attr("y", function(d,i){
+      var x = categories[i];
+      return yScale(x) + 12;
+    })
+    .tween("text", function(d) {
+          var perc = d;
+          var i = d3.interpolateRound(+this.textContent.replace('%', ''), perc);
+          return function(t) {
+            this.textContent = i(t) + '%';
+          };
+        });
+
+
+  //Update X axis
+  bar_object.select(".x.axis")
+      .transition()
+      .duration(750)
+      .call(xAxis);
+  };
+
+  //Trend chart variables
+  var width = 260, height = 140;
+  var margins = {top: 10, right: 40, bottom: 20, left: 60};
+  var chartwidth = width - margins.left - margins.right;
+  var chartheight = height - margins.top - margins.bottom;
+  var svgBarChartArea = d3.select("#barChart")
+                  .append("svg")
+                  .attr("width", width)
+                  .attr("height", height);
+  var barChart = svgBarChartArea.append("g")
+                .attr("transform","translate("+margins.left + "," + margins.top + ")");
+  var dataset = [0,0,0,0];
+  var categories = ["Logging","Oil Palm","Wood Fiber","Outside Concessions"]
+  //Scales
+  var yScale = d3.scale.ordinal()
+                .domain(categories)
+                .rangeRoundBands([0,chartheight],0.4);
+  var xScale = d3.scale.linear()
+                .domain([0, 70])
+                .range([0, chartwidth]);
+  //Define x,y axis
+  var xAxis = d3.svg.axis()
+          .scale(xScale)
+          .orient("bottom")
+          .ticks(6);
+  var yAxis = d3.svg.axis()
+          .scale(yScale)
+          .orient("left");
+
+          function wrap(text, width) {
+
+            text.each(function() {
+              var text = d3.select(this);
+              var string = text.text();
+              if (string.length > 10) {
+                  var words = text.text().split(/\s+/).reverse(),
+                  word,
+                  line = [],
+                  lineNumber = -1.5,
+                  lineHeight = 1.1, // ems
+                  y = text.attr("y"),
+                  dy = parseFloat(text.attr("dy")),
+                  tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+              while (word = words.pop()) {
+                line.push(word);
+                tspan.text(line.join(" "));
+                if (tspan.node().getComputedTextLength() > width) {
+                  line.pop();
+                  tspan.text(line.join(" "));
+                  line = [word];
+                  tspan = text.append("tspan").attr("x", -10).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                }
+              }
+            }
+          });
+        }
+
+
+var createBarChart = function(){
+
+  //Create bar chart
+  var drawChart = function(){
+    barChart.selectAll("rect")
+      .data(dataset)
+      .enter()
+      .append("rect")
+      .on("mouseover", function(d,i){
+      })
+      .attr("fill", function(d, i) {
+        return color3[i];
+      })
+      .attr("x", function(d, i){
+        return xScale(0);
+      })
+      .attr("y", function(d,i){
+        var x = categories[i];
+        return yScale(x);
+      })
+      .attr("width", function(d){
+          return xScale(d);
+        })
+      .attr("height", yScale.rangeBand());
+
+    barChart.selectAll("text")
+      .data(dataset)
+      .enter()
+      .append("text")
+      .attr("x", function(d, i){
+        return xScale(d);
+      })
+      .attr("y", function(d,i){
+        var x = categories[i];
+        return yScale(x) + 12;
+      });
+
+    barChart.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + (chartheight) + ")")
+        .call(xAxis);
+    barChart.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+        .selectAll(".tick text")
+        .call(wrap, yScale.rangeBand());
+    };
+
+
+  drawChart();
+  return drawChart;
+}
+
+
+
+loadTables();
+
+createMap();
+var trendChart = createTrendChart();
+var pies = createPies();
+var barChart = createBarChart();
+
+
+
+
+</script>
+</body>
+</html>

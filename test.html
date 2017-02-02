@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link
+      rel="stylesheet"
+      href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"
+  />
+  <style>
+@font-face {
+    font-family: "Arial MT Std";
+    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-LightCond.otf) format("opentype");
+    font-weight: normal;
+}
+@font-face {
+    font-family: "Arial MT Std";
+    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-BoldCond.otf) format("opentype");
+    font-weight: bold;
+}
+@font-face {
+    font-family: "Firas";
+    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/FiraSans-Regular.otf) format("opentype");
+    font-weight: normal;
+}
+body {
+  font-family: "Arial MT Std", Helvetica, sans-serif, Arial;
+  position: relative;
+}
+p{
+  font-family: "Firas";
+  text-align: justify;
+}
+h1{
+  color: #424242;
+  font-size: 18px;
+  margin: 5px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+h2{
+  color: #424242;
+  font-size: 20px;
+  margin: 0px;
+  text-align: center;
+  font-weight: bolder;
+}
+h3{
+  display: block;
+  text-align: center;
+  font-size: 18px;
+  margin: 15px;
+  font-weight: normal;
+}
+h4{
+  display: block;
+  margin: 0px;
+  text-align: center;
+  font-weight: normal;
+  font-size: 14px;
+}
+h5{
+  display: inline;
+  margin: 0px;
+  text-align: center;
+  font-weight: normal;
+  font-size: 14px;
+}
+
+.background {
+  fill: none;
+  pointer-events: all;
+}
+.mesh {
+  fill: none;
+  stroke: #fff;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: darkgray;
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+.axis text {
+  font-size: 11px;
+}
+#info{
+  z-index: 1;
+  /*position:relative;
+  width:200px;
+  height:80px;
+  padding:10px;
+  background-color:transparent;
+  border-radius:10px;
+  margin-left: 10px;
+  */
+}
+
+#info2 {
+  width: 80px;
+  overflow: hidden;
+  float: left;
+}
+#info2 h2 {
+  font-size: 24px;
+  text-align: right;
+  margin-top: 5px;
+}
+
+#info3 {
+  width: 110px;
+  overflow: hidden;
+}
+#info3 h2 {
+}
+#info.hidden{
+  display:none;
+}
+#info p{
+  margin:0px;
+  font-size:12px;
+}
+
+#chartDiv rect{
+  fill:#D68178;
+}
+#chartDiv rect.selected{
+  fill:darkred;
+}
+#chartDiv svg {
+}
+
+#box {
+  overflow: hidden;
+  margin: auto;
+}
+#box div{
+    display: inline-block;
+}
+#mapDiv {
+  margin: auto;
+  width: 550px;
+  height: 215px;
+  border: 1px dashed darkgray;
+}
+
+#chartDiv {
+  margin: auto;
+  width: 640px;
+}
+
+#pieDiv1 path {
+  stroke: #fff;
+}
+#pieDiv1 text {
+	font-size: 10px;
+  fill:white;
+}
+#pieDiv2 path {
+  stroke: #fff;
+}
+#pieDiv2 text {
+	font-size: 10px;
+  fill:white;
+}
+#barChart text {
+  font-size: 10px;
+  fill:black;
+}
+#dashboard{
+  overflow: hidden;
+  margin: auto;
+  width: 640px;
+}
+#left{
+  width: 550px;
+  float: left;
+}
+#right{
+  overflow: hidden;
+  margin: auto;
+  width: 570px;
+}
+#right div {
+    display: inline-block;
+}
+#right svg {
+  margin: auto;
+}
+#pieDiv1 {
+  float: right;
+}
+#pieDiv2 {
+  float: left;
+}
+#pieDiv1 {
+  float: right;
+}
+.indent {
+  margin-left: 50px;
+  margin-right: 50px;
+}
+.shorter {
+  width: 450px;
+  font-family: "Firas";
+}
+  </style>
+</head>
+<body>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://d3js.org/topojson.v1.min.js"></script>
+  <script src="http://d3js.org/d3-tile.v0.0.min.js"></script>
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/leaflet.esri/1.0.4/esri-leaflet.js"></script>
+  <script>
+    // Copyright (c) 2013 Ryan Clark
+    // https://gist.github.com/rclark/5779673
+    L.TopoJSON = L.GeoJSON.extend({
+      addData: function(jsonData) {
+        if (jsonData.type === "Topology") {
+          for (key in jsonData.objects) {
+            geojson = topojson.feature(jsonData, jsonData.objects[key]);
+            L.GeoJSON.prototype.addData.call(this, geojson);
+          }
+        }
+        else {
+          L.GeoJSON.prototype.addData.call(this, jsonData);
+        }
+      }
+    });
+  </script>
+  <div align="center"><embed width=700 height=660 src="http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/d3map_final.html"></div>
+
+
+
+</body>
+</html>
