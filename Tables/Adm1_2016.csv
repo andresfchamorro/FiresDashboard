@@ -1,4 +1,4 @@
-OBJECTID,Join_Count,TARGET_FID,Fire,Logging,OilPalm,WoodFiber,Concession,OutCon,Protected,OutProtect,Peat,OutPeat,Plantation,OutPlantat,Shape_Length,Shape_Area
+OBJECTID,Join_Count,TARGET_FID,Fire,Logging,OilPalm,WoodFiber,Concession,OutCon,Protected,OutProtected,Peat,OutPeat,Plantation,OutPlantat,Shape_Length,Shape_Area
 1,778,1,778,50,50,61,161,619,152,626,116,662,86,692,31.65258231,4.625575592
 2,3,2,3,0,0,0,0,3,1,2,0,3,0,3,5.532011618,0.459702601
 3,382,3,382,0,0,5,5,377,39,343,9,373,15,367,20.1012051,1.36051116

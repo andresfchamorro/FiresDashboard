@@ -17,9 +17,18 @@
     src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-BoldCond.otf) format("opentype");
     font-weight: bold;
 }
+@font-face {
+    font-family: "Firas";
+    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/FiraSans-Regular.otf) format("opentype");
+    font-weight: normal;
+}
 body {
   font-family: "Arial MT Std", Helvetica, sans-serif, Arial;
   position: relative;
+}
+p{
+  font-family: "Firas";
+  text-align: justify;
 }
 h1{
   color: #424242;
@@ -31,14 +40,15 @@ h1{
 }
 h2{
   color: #424242;
-  font-size: 16px;
+  font-size: 20px;
   margin: 0px;
   text-align: center;
   font-weight: bolder;
 }
 h3{
   display: block;
-  font-size: 16px;
+  text-align: center;
+  font-size: 18px;
   margin: 15px;
   font-weight: normal;
 }
@@ -79,15 +89,16 @@ h5{
 }
 #info{
   z-index: 1;
-  position:relative;
+  /*position:relative;
   width:200px;
   height:80px;
   padding:10px;
   background-color:transparent;
   border-radius:10px;
   margin-left: 10px;
-  /*box-shadow: 4px 4px 10px rgba(0,0,0,0.1);*/
+  */
 }
+
 #info2 {
   width: 80px;
   overflow: hidden;
@@ -112,14 +123,7 @@ h5{
   margin:0px;
   font-size:12px;
 }
-p {
-  text-align: left;
-}
-.line {
-				stroke:#D68178;
-				stroke-width: 1;
-				fill: none;
-			}
+
 #chartDiv rect{
   fill:#D68178;
 }
@@ -139,13 +143,13 @@ p {
 #mapDiv {
   margin: auto;
   width: 550px;
-  height: 250px;
+  height: 225px;
   border: 1px dashed darkgray;
 }
 
 #chartDiv {
   margin: auto;
-  width: 650px;
+  width: 640px;
 }
 
 #pieDiv1 path {
@@ -169,7 +173,7 @@ p {
 #dashboard{
   overflow: hidden;
   margin: auto;
-  width: 650px;
+  width: 640px;
 }
 #left{
   width: 550px;
@@ -178,15 +182,21 @@ p {
 #right{
   overflow: hidden;
   margin: auto;
-  width: 600px;
+  width: 580px;
 }
-#right div{
+#right div {
     display: inline-block;
 }
 #right svg {
   margin: auto;
 }
+#pieDiv1 {
+  float: right;
+}
 #pieDiv2 {
+  float: left;
+}
+#pieDiv1 {
   float: right;
 }
 .indent {
@@ -195,9 +205,8 @@ p {
 }
 .shorter {
   width: 450px;
+  font-family: "Firas";
 }
-
-
   </style>
 </head>
 <body>
@@ -225,48 +234,22 @@ p {
   </script>
 
 <div id="dashboard">
-    <h1>Indonesia's Fire History Provides Insights to Prevent Future Fires</h1>
-    <p>For decades, forest and land fires in Indonesia have become an annual environmental crisis. The fires are set to clear the country's moist tropicla forest and make way for pulpwood and oil palm plantations. The dry conditions brought by the 2015 El Niño made last year's fire season the worst in twenty years: approximately 2.6 millions hectares of land were burned between June and October. The fires, many burning on carbon-rich peatlands, exposed millions of people across Southeast Asia to toxic haze and tripled Indonesia's annual greenhouse gas emissions. This year we have not seen nearly as many fires because of wetter conditions, but the root of the problem still needs to be addressed.
-    </p>
-    <p>Nearly all fires in Indonesia are human-caused. Fires are typically set to clear land for agriculture, but also during land conflicts. While weather conditions dictate when fires can burn – Indonesia typically experiences two annual dry seasons, human actions determine where fires occur each year, with the highest concentration of fires occurring in areas with the greatest amount of forest conversion to agriculture and where land claims are at odds with local communities. While the incentives to burn are threats to forests all across the country, fires are likely to continue happening in regions with a long history of land conversion and conflicts – where land-owners might seek to expand their plantations – as well as in regions with a recent spike in fires – where the new frontiers of burning have been set.
-    </p>
-    <p>Analyzing the past 15 years of fire data can help guide fire prevention efforts - like companies' no-burn commitments, government land use and restoration strategies, or village-level fire prevention programs - to the areas of greatest need.
-    </p>
-    <p>To address the need for historical insights, GFW fires has developed a series of data layers that show the yearly concentration of fire alerts detected by NASA's MODIS satellites. In the map below, hotter/redder areas symbolize a high concentration of fire alerts, while bluer/colder areas signal a lower occurrence of fires.
-    </p>
+    <div id="info">
+      <h3><span id="number">30162</span> Fire Alerts in <span style="font-weight:bold" id="place">Kalimantan Tengah</span>, <span id="year">2015</span></h3>
+    </div>
     <div id="mapDiv"></div>
-    <p>The fires in 2015 were densely concentrated in South Sumatra and Central Kalimantan, which are also the provinces with the highest amount of fires over the past 15 years. The graph below charts the continuing occurrence of fire alerts in Central Kalimantan (more than 30,000 alerts in 2006 and 2015). Click on any other province in the map to view the trend for that province. South Sumatra also shows a long history of fire activity, though not as high in intensity as Kalimantan.
-    </p>
     <div id="chartDiv"></div>
-      <p class="shorter">
-        <div id="pieDiv2">
-          <h4>Fire Alerts on <span style="color:#1B455E; font-weight:bold;">Peatland</span></h4>
-        </div>
-        What is driving the high frequency of fires in these two provinces? To begin with, they share a high concentration of flammable peatlands, which will not burn unless drained first, confirming the link between fires and agricultural expansion. In 2015, over 60% of fires in Central Kalimantan and South Sumatra were located in peatlands.
-      </p>
-    <p>When looking at what commodities are driving the fires, the answer varies across different provinces. The charts below add contextual information for fires in Central Kalimantan. Every year since 2001, the majority of alerts detected in this province were located inside oil palm plantations. The charts can be updated by clicking on another province, and hovering over a different year. In South Sumatra, the key commodities driving fires are pulpwood and wood fiber. Up to 50% of fire alerts from 2015 fell inside wood fiber concession areas.
-    </p>
   <div id="right">
-    <div id="pieDiv1">
-      <h4>Fire Alerts in <span style="color:#1B5E48; font-weight:bold;">Protected Areas</span></h4>
+    <div id="pieDiv2">
+      <h4>Fire Alerts on <span style="color:#1B455E; font-weight:bold;">Peatland</span></h4>
     </div>
     <div id="barChart">
       <h4>Fires Alerts by Land Use Area</h4>
     </div>
+    <div id="pieDiv1">
+      <h4>Fire Alerts in <span style="color:#1B5E48; font-weight:bold;">Protected Areas</span></h4>
+    </div>
   </div>
-  <p>What is happening in other provinces? Although fires in Riau are decreasing, the fire alert count for 2016 is relatively high for a wet year, and almost half of these fire alerts were located inside wood fiber concessions. A new emerging fire hotspot is Papua, where illegal burning is starting to set off in relatively untouched forests. The high percentage of fire alerts detected inside protected areas in this province - more than 35% every year since 2001- is a big cause for concern.
-  </p>
-  <p>What efforts could be targeted to Kalimantan, Sumatra, Riau and Papua to prevent yet another fire crisis in Indonesia?
-  </p>
-  <p class="indent">1. No-burn and zero-deforestation commitments should be prioritized in provinces with chronic fires, where the clearing of forests and peatlands for agricultural expansion needs to be contained. Moreover, companies that have already announced such commitments need to deliver not only within their concession boundaries, but also develop strategies to ensure this commitment is followed across their entire supply chains.
-  </p>
-  <p class="indent">2. Provinces with intense recent burning, such as Papua, should be monitored closely. The new commitment to strengthen Indonesia's moratorium by including peatlands --
-  </p>
-  <p class="indent">3. Provinces with a long history of burning should be the main focus of the Peatland Restoration Agency, a new government-led effort to restore the hydrology of peatlands. The recent amendment to the moratorium also demands companies to restore peatlands they have drained in the past.
-  </p>
-  <p class="indent">4. More granular analysis of fire history can help decide where to up-scale village-level initiatives, such as the work of the Fire Free Alliance Village. The Alliance groups together different companies and non-governmental organization to develop patrolling, water management and fire prevention programs in specific villages in Riau.
-  </p>
-</div>
 
 <script>
 
@@ -304,6 +287,9 @@ var loadTables = function(){
                                   tables.push(data14);
                                     d3.csv("Tables/Adm1_2016.csv", function(error, data15) {
                                       tables.push(data15);
+                                      updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+                                      updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+                                      updateBarChart(svgBarChartArea,selected_id,selected_year);
       });
       });
       });
@@ -320,9 +306,12 @@ var loadTables = function(){
       });
       });
       });
+
+
 }
 
-var LineData = [];
+var topoAdm1;
+var init;
 
 var createMap = function(){
 
@@ -367,7 +356,7 @@ var createMap = function(){
   };
   legend.addTo(map);
 
-  d3.json("toposim-IndonesiaFires2.json", function(json){
+  d3.json("toposim-IndonesiaFires3.json", function(json){
 
     function style(feature) {
       return {
@@ -380,11 +369,13 @@ var createMap = function(){
     }
 
     var topoAdm1Data = topojson.feature(json, json.objects.IndonesiaFires);
+    console.log(topoAdm1Data);
+    init = topoAdm1Data.features[14];
+    topoAdm1 = new L.TopoJSON(topoAdm1Data, {style:style});
+//  init = topoAdm1._layers[737].feature;
 
-    var topoAdm1 = new L.TopoJSON(topoAdm1Data, {style:style});
     topoAdm1.addTo(map);
     topoAdm1.eachLayer(handleLayer);
-
 
     function handleLayer(layer){
 
@@ -393,37 +384,44 @@ var createMap = function(){
       layer.on({
         click : clicked,
         mouseover: hover,
-        mouseout: reset
+      //  mouseout: reset
       });
     }
+
+    var old;
 
     function clicked(e) {
         //Change bar chart and also selected adm1 id
         var layer = e.target
+        //console.log(layer);
         trendChart.updateTrendChart(layer.feature);
         selected_id = layer.feature.properties.ID;
         if (selected_year) {
-          pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
-          pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
-          barChart.updateBarChart(selected_id, selected_year);
+          updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+          updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+          updateBarChart(svgBarChartArea,selected_id, selected_year);
           var idname = "F" + (selected_year+2001);
           //update info
           var info = d3.select("#info");
-          info.select("#number").text(formatLong(layer.feature.properties[idname]));
-          /*
-          info.select("#number").transition().duration(200)
+          //info.select("#number").text(formatLong(layer.feature.properties[idname]));
+
+          info.select("#number").transition().duration(500)
             .tween("text", function(){
               var i = d3.interpolateRound(+this.textContent, layer.feature.properties[idname]);
               return function(t) {
                 this.textContent = i(t);
               }
             });
-            */
+
+        }
+        if (old) {
+            topoAdm1.resetStyle(old);
         }
         layer.setStyle({
           fillColor: 'rgba(145,145,145,0.2)',
-          weight: 0.3,
+          weight: 0.5,
         })
+        old = layer;
         map.fitBounds(layer.getBounds());
         //update info
         var info = d3.select("#info");
@@ -431,15 +429,18 @@ var createMap = function(){
     }
 
     function hover(e) {
+/*
         var layer = e.target;
         layer.setStyle({
           fillColor: 'rgba(145,145,145,0.2)',
         });
+        */
     }
     function reset(e) {
+      /*
       var layer = e.target;
       topoAdm1.resetStyle(layer);
-    }
+    */}
 
 });
 }
@@ -447,7 +448,7 @@ var createMap = function(){
 var createTrendChart = function(){
 
   //Trend chart variables
-  var width = 600, height = 250;
+  var width = 600, height = 210;
   var margins = {top: 15, right: 20, bottom: 40, left: 100};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
@@ -458,35 +459,19 @@ var createTrendChart = function(){
                   .attr("height", height);
   var chart = svgChartArea.append("g")
                 .attr("transform","translate("+margins.left + "," + margins.top + ")");
-  var dataset = [20000,2220,2130,3323,12323,2323,12325,3535,55,75650,0,0,0,0,0,0];
+  var dataset = [2400,23394,8431,14946,5719,30210,2941,1480,15453,443,6099,6076,3670,13401,30162,972];
   //Scales
-  var xScaleLinear = d3.scale.linear().domain([2001,2016]).range([0, chartwidth]);
-/*
   var xScale = d3.scale.ordinal()
                 .domain(d3.range(2001,2017))
                 .rangeRoundBands([0,chartwidth],0.4);
-*/
   var yScale = d3.scale.linear()
                 .domain([0, 30000])
                 .range([chartheight, 0]);
   //Define x,y axis
-  var xAxisLine = d3.svg.axis().scale(xScaleLinear).orient("bottom").ticks(16);
-
-  var line = d3.svg.line()
-    .x(function(d,i) {
-      return xScaleLinear(i+2001);
-    })
-    .y(function(d){
-      return yScale(d);
-    })
-
-/*
   var xAxis = d3.svg.axis()
           .scale(xScale)
           .orient("bottom")
           .ticks(16);
-*/
-
   var yAxis = d3.svg.axis()
           .scale(yScale)
           .orient("left")
@@ -494,11 +479,52 @@ var createTrendChart = function(){
 
   //Create bar chart
   var drawChart = function(){
-    chart.append("path").attr("class", "line").attr("d", line(dataset));
+    chart.selectAll("rect")
+      .data(dataset)
+      .enter()
+      .append("rect")
+      .attr("x", function(d, i){
+        return xScale(2001+i);
+      })
+      .attr("y", function(d){
+        return yScale(d);
+      })
+      .attr("width", xScale.rangeBand())
+      .attr("height", function(d){
+        return chartheight - yScale(d);
+      })
+      .attr("class", function(d,i){
+        if (i == 14) {
+          return "selected";
+        }
+      })
+      .on("mouseover", function(d,i){
+        d3.selectAll("rect").classed("selected", false);
+        d3.select(this).attr("class", "selected");
+        selected_year = i;
+        updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+        updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+        updateBarChart(svgBarChartArea,selected_id, selected_year);
+        //update info
+        var info = d3.select("#info");
+        //console.log(d);
+        //info.select("#number").text(formatLong(d));
+
+        info.select("#number").transition().duration(500)
+          .tween("text", function(){
+            var i = d3.interpolateRound(+this.textContent, d);
+            return function(t) {
+              this.textContent = i(t);
+            }
+          });
+
+        info.select("#year").text(i+2001);
+        console.log(selected_year+2001,selected_id)
+      });
     chart.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + (chartheight) + ")")
-        .call(xAxisLine);
+        .call(xAxis);
     chart.append("g")
         .attr("class", "y axis")
         .call(yAxis);
@@ -506,6 +532,7 @@ var createTrendChart = function(){
 
   drawChart.updateTrendChart = function(selected_data){
     //var test = d3.values(selected_data); More efficient?
+    console.log(selected_data)
     dataset = [selected_data.properties.F2001,selected_data.properties.F2002,selected_data.properties.F2003,selected_data.properties.F2004,selected_data.properties.F2005,selected_data.properties.F2006,selected_data.properties.F2007,selected_data.properties.F2008,selected_data.properties.F2009,selected_data.properties.F2010,selected_data.properties.F2011,selected_data.properties.F2012,selected_data.properties.F2013,selected_data.properties.F2014,selected_data.properties.F2015,selected_data.properties.F2016];
 
     //yScale.domain([0, d3.max(dataset)])
@@ -515,12 +542,12 @@ var createTrendChart = function(){
       .transition()
       .duration(750)
       .attr("x", function(d, i){
-        return xScaleLinear(2001+i);
+        return xScale(2001+i);
       })
       .attr("y", function(d){
         return yScale(d);
       })
-      .attr("width", xScaleLinear.rangeBand())
+      .attr("width", xScale.rangeBand())
       .attr("height", function(d){
         return chartheight - yScale(d);
       });
@@ -538,7 +565,8 @@ var createTrendChart = function(){
 var formatLong = d3.format(",d");
 //Tables and variables for pie charts
 var mockdataset = [0,50];
-var selected_id, selected_year;
+var selected_id = 15;
+var selected_year = 14;
 var pie_w = 150, pie_h = 150;
 //var pie_margins = {top: 10, right: 10, bottom: 0, left: 10};
 var pie = d3.layout.pie().sort(null);
@@ -558,6 +586,38 @@ var svgPie2 = d3.select("#pieDiv2")
                 .append("svg")
                 .attr("width", pie_w)
                 .attr("height", pie_h);
+
+                var updatePie = function(pie_object,adm_id,year_id,attr1,attr2) {
+                 var selectedTableYear = tables[year_id];
+                 var selectedRowAdm = selectedTableYear[adm_id-1];
+                 var selectedAttributes = [+selectedRowAdm[attr1], +selectedRowAdm[attr2]];
+                 var tot = d3.sum(selectedAttributes);
+                 var percentages = [(selectedAttributes[0]/tot)*100, (selectedAttributes[1]/tot)*100];
+
+                 function arcTween(a) {
+                   var i = d3.interpolate(this._current, a);
+                   this._current = i(0);
+                   return function(t) {
+                     return arc(i(t));
+                   };
+                 }
+
+                 pie_object.selectAll("g.arc")
+                   .data(pie(percentages)).select("text").transition().duration(750)
+                   .attr("transform", function(d) {
+                     return "translate(" + arc.centroid(d) + ")";
+                   })
+                   .attr("text-anchor", "middle")
+                   .tween("text", function(d) {
+                         var i = d3.interpolateRound(+this.textContent.replace('%', ''), d.value);
+                         return function(t) {
+                           this.textContent = i(t) + '%';
+                         };
+                       });
+                   pie_object.selectAll("g.arc")
+                   .data(pie(selectedAttributes)).select("path").transition().duration(750)
+                   .attrTween("d", arcTween);
+                }
 
 var createPies = function(){
 
@@ -579,49 +639,69 @@ var createPies = function(){
 
    }
 
-   drawPie.updatePie = function(pie_object,adm_id,year_id,attr1,attr2) {
-    var selectedTableYear = tables[year_id];
-    var selectedRowAdm = selectedTableYear[adm_id-1];
-    var selectedAttributes = [+selectedRowAdm[attr1], +selectedRowAdm[attr2]];
-    var tot = d3.sum(selectedAttributes);
-    var percentages = [(selectedAttributes[0]/tot)*100, (selectedAttributes[1]/tot)*100];
 
-    function arcTween(a) {
-      var i = d3.interpolate(this._current, a);
-      this._current = i(0);
-      return function(t) {
-        return arc(i(t));
-      };
-    }
-
-    pie_object.selectAll("g.arc")
-      .data(pie(percentages)).select("text").transition().duration(750)
-      .attr("transform", function(d) {
-        return "translate(" + arc.centroid(d) + ")";
-      })
-      .attr("text-anchor", "middle")
-      .tween("text", function(d) {
-            var i = d3.interpolateRound(+this.textContent.replace('%', ''), d.value);
-            return function(t) {
-              this.textContent = i(t) + '%';
-            };
-          });
-      pie_object.selectAll("g.arc")
-      .data(pie(selectedAttributes)).select("path").transition().duration(750)
-      .attrTween("d", arcTween);
-  }
 
   drawPie(svgPie1, color1);
-  drawPie(svgPie2, color2)
+  drawPie(svgPie2, color2);
+
   return drawPie;
 
 }
 
-var createBarChart = function(){
+var updateBarChart = function(bar_object,adm_id,year_id){
+  var selectedTableYear = tables[year_id];
+  var selectedRowAdm = selectedTableYear[adm_id-1];
+  var selected_dataset = [+selectedRowAdm.Logging, +selectedRowAdm.OilPalm, +selectedRowAdm.WoodFiber, +selectedRowAdm.OutCon]
+  var total = d3.sum(selected_dataset);
+  var perc = [(selected_dataset[0]/total)*100,(selected_dataset[1]/total)*100,(selected_dataset[2]/total)*100,(selected_dataset[3]/total)*100];
+  //console.log(perc);
+
+  //xScale.domain([0, d3.max(selected_dataset)]).ticks(8);
+  bar_object.selectAll("rect")
+    .data(perc)
+    .transition()
+    .duration(750)
+    .attr("x", function(d, i){
+      return xScale(0);
+    })
+    .attr("y", function(d,i){
+      var x = categories[i];
+      return yScale(x);
+    })
+    .attr("width", function(d){
+        return xScale(d);
+      })
+    .attr("height", yScale.rangeBand());
+
+  bar_object.selectAll("text")
+    .data(perc)
+    .transition().duration(750)
+    .attr("x", function(d, i){
+      return xScale(d);
+    })
+    .attr("y", function(d,i){
+      var x = categories[i];
+      return yScale(x) + 12;
+    })
+    .tween("text", function(d) {
+          var perc = d;
+          var i = d3.interpolateRound(+this.textContent.replace('%', ''), perc);
+          return function(t) {
+            this.textContent = i(t) + '%';
+          };
+        });
+
+
+  //Update X axis
+  bar_object.select(".x.axis")
+      .transition()
+      .duration(750)
+      .call(xAxis);
+  };
 
   //Trend chart variables
-  var width = 250, height = 150;
-  var margins = {top: 10, right: 20, bottom: 20, left: 60};
+  var width = 270, height = 150;
+  var margins = {top: 10, right: 40, bottom: 20, left: 60};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
   var svgBarChartArea = d3.select("#barChart")
@@ -676,6 +756,9 @@ var createBarChart = function(){
           });
         }
 
+
+var createBarChart = function(){
+
   //Create bar chart
   var drawChart = function(){
     barChart.selectAll("rect")
@@ -722,56 +805,7 @@ var createBarChart = function(){
         .call(wrap, yScale.rangeBand());
     };
 
-  drawChart.updateBarChart = function(adm_id, year_id){
-    var selectedTableYear = tables[year_id];
-    var selectedRowAdm = selectedTableYear[adm_id-1];
-    var selected_dataset = [+selectedRowAdm.Logging, +selectedRowAdm.OilPalm, +selectedRowAdm.WoodFiber, +selectedRowAdm.OutCon]
-    var total = d3.sum(selected_dataset);
-    var perc = [(selected_dataset[0]/total)*100,(selected_dataset[1]/total)*100,(selected_dataset[2]/total)*100,(selected_dataset[3]/total)*100];
-    console.log(perc);
 
-    //xScale.domain([0, d3.max(selected_dataset)]).ticks(8);
-    barChart.selectAll("rect")
-      .data(perc)
-      .transition()
-      .duration(750)
-      .attr("x", function(d, i){
-        return xScale(0);
-      })
-      .attr("y", function(d,i){
-        var x = categories[i];
-        return yScale(x);
-      })
-      .attr("width", function(d){
-          return xScale(d);
-        })
-      .attr("height", yScale.rangeBand());
-
-    barChart.selectAll("text")
-      .data(perc)
-      .transition().duration(750)
-      .attr("x", function(d, i){
-        return xScale(d);
-      })
-      .attr("y", function(d,i){
-        var x = categories[i];
-        return yScale(x) + 12;
-      })
-      .tween("text", function(d) {
-            var perc = d;
-            var i = d3.interpolateRound(+this.textContent.replace('%', ''), perc);
-            return function(t) {
-              this.textContent = i(t) + '%';
-            };
-          });
-
-
-    //Update X axis
-    barChart.select(".x.axis")
-        .transition()
-        .duration(750)
-        .call(xAxis);
-    };
   drawChart();
   return drawChart;
 }
@@ -779,11 +813,13 @@ var createBarChart = function(){
 
 
 loadTables();
-//console.log(tables);
+console.log(tables);
 createMap();
 var trendChart = createTrendChart();
 var pies = createPies();
 var barChart = createBarChart();
+
+
 
 
 </script>
