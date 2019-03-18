@@ -17,9 +17,18 @@
     src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-BoldCond.otf) format("opentype");
     font-weight: bold;
 }
+@font-face {
+    font-family: "Firas";
+    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/FiraSans-Regular.otf) format("opentype");
+    font-weight: normal;
+}
 body {
   font-family: "Arial MT Std", Helvetica, sans-serif, Arial;
   position: relative;
+}
+p{
+  font-family: "Firas";
+  text-align: justify;
 }
 h1{
   color: #424242;
@@ -31,19 +40,27 @@ h1{
 }
 h2{
   color: #424242;
-  font-size: 16px;
+  font-size: 20px;
   margin: 0px;
   text-align: center;
   font-weight: bolder;
 }
 h3{
   display: block;
-  font-size: 16px;
+  text-align: center;
+  font-size: 18px;
   margin: 15px;
   font-weight: normal;
 }
 h4{
   display: block;
+  margin: 0px;
+  text-align: center;
+  font-weight: normal;
+  font-size: 14px;
+}
+h5{
+  display: inline;
   margin: 0px;
   text-align: center;
   font-weight: normal;
@@ -72,15 +89,16 @@ h4{
 }
 #info{
   z-index: 1;
-  position:relative;
+  /*position:relative;
   width:200px;
   height:80px;
   padding:10px;
   background-color:transparent;
   border-radius:10px;
   margin-left: 10px;
-  /*box-shadow: 4px 4px 10px rgba(0,0,0,0.1);*/
+  */
 }
+
 #info2 {
   width: 80px;
   overflow: hidden;
@@ -115,13 +133,23 @@ h4{
 #chartDiv svg {
 }
 
-#barChart, #pieDiv1, #pieDiv2 {
+#box {
+  overflow: hidden;
+  margin: auto;
+}
+#box div{
+    display: inline-block;
+}
+#mapDiv {
+  margin: auto;
+  width: 550px;
+  height: 215px;
+  border: 1px dashed darkgray;
 }
 
-#mapDiv {
-  width: 550px;
-  height: 250px;
-  border: 1px dashed darkgray;
+#chartDiv {
+  margin: auto;
+  width: 640px;
 }
 
 #pieDiv1 path {
@@ -145,7 +173,7 @@ h4{
 #dashboard{
   overflow: hidden;
   margin: auto;
-  width: 800px;
+  width: 640px;
 }
 #left{
   width: 550px;
@@ -153,22 +181,39 @@ h4{
 }
 #right{
   overflow: hidden;
-  width: 250px;
+  margin: auto;
+  width: 570px;
+}
+#right div {
+    display: inline-block;
 }
 #right svg {
-  display: block;
   margin: auto;
 }
-
-
-
+#pieDiv1 {
+  float: right;
+}
+#pieDiv2 {
+  float: left;
+}
+#pieDiv1 {
+  float: right;
+}
+.indent {
+  margin-left: 50px;
+  margin-right: 50px;
+}
+.shorter {
+  width: 450px;
+  font-family: "Firas";
+}
   </style>
 </head>
 <body>
-  <script src="http://d3js.org/d3.v3.min.js"></script>
-  <script src="http://d3js.org/topojson.v1.min.js"></script>
-  <script src="http://d3js.org/d3-tile.v0.0.min.js"></script>
-  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+  <script src="https://d3js.org/topojson.v1.min.js"></script>
+  <script src="https://d3js.org/d3-tile.v0.0.min.js"></script>
+  <script src="https://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/leaflet.esri/1.0.4/esri-leaflet.js"></script>
   <script>
     // Copyright (c) 2013 Ryan Clark
@@ -189,33 +234,22 @@ h4{
   </script>
 
 <div id="dashboard">
-  <div id="left">
-    <h3>Click on a province to view the trend of fires since 2001</h3>
-    <div id="mapDiv"></div>
-    <h3>Hover over a year to analyze where fires happened</h3>
-    <div id="chartDiv"></div>
-  </div>
-  <div id="right">
     <div id="info">
-      <h1 id="place"></h1>
-      <div id="info2">
-        <h2 id="number"><h2>
-      </div>
-      <div id="info3">
-        <h2 id="year"></h2>
-      </div>
+      <h3><span id="number">30162</span> Fire Alerts in <span style="font-weight:bold" id="place">Kalimantan Tengah</span>, <span id="year">2015</span></h3>
     </div>
-    <div id="pieDiv1">
-      <h4>Fire Alerts in <span style="color:#1B5E48; font-weight:bold;">Protected Areas</span></h4>
-    </div>
+    <div id="mapDiv"></div>
+    <div id="chartDiv"></div>
+  <div id="right">
     <div id="pieDiv2">
       <h4>Fire Alerts on <span style="color:#1B455E; font-weight:bold;">Peatland</span></h4>
     </div>
     <div id="barChart">
       <h4>Fires Alerts by Land Use Area</h4>
     </div>
+    <div id="pieDiv1">
+      <h4>Fire Alerts in <span style="color:#1B5E48; font-weight:bold;">Protected Areas</span></h4>
+    </div>
   </div>
-</div>
 
 <script>
 
@@ -253,6 +287,9 @@ var loadTables = function(){
                                   tables.push(data14);
                                     d3.csv("Tables/Adm1_2016.csv", function(error, data15) {
                                       tables.push(data15);
+                                      updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+                                      updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+                                      updateBarChart(svgBarChartArea,selected_id,selected_year);
       });
       });
       });
@@ -269,7 +306,12 @@ var loadTables = function(){
       });
       });
       });
+
+
 }
+
+var topoAdm1;
+var init;
 
 var createMap = function(){
 
@@ -314,7 +356,7 @@ var createMap = function(){
   };
   legend.addTo(map);
 
-  d3.json("toposim-IndonesiaFires2.json", function(json){
+  d3.json("toposim-IndonesiaFires3.json", function(json){
 
     function style(feature) {
       return {
@@ -327,10 +369,12 @@ var createMap = function(){
     }
 
     var topoAdm1Data = topojson.feature(json, json.objects.IndonesiaFires);
-    var topoAdm1 = new L.TopoJSON(topoAdm1Data, {style:style});
+    init = topoAdm1Data.features[14];
+    topoAdm1 = new L.TopoJSON(topoAdm1Data, {style:style});
+//  init = topoAdm1._layers[737].feature;
+
     topoAdm1.addTo(map);
     topoAdm1.eachLayer(handleLayer);
-
 
     function handleLayer(layer){
 
@@ -339,37 +383,44 @@ var createMap = function(){
       layer.on({
         click : clicked,
         mouseover: hover,
-        mouseout: reset
+      //  mouseout: reset
       });
     }
+
+    var old;
 
     function clicked(e) {
         //Change bar chart and also selected adm1 id
         var layer = e.target
+        //console.log(layer);
         trendChart.updateTrendChart(layer.feature);
         selected_id = layer.feature.properties.ID;
         if (selected_year) {
-          pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
-          pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
-          barChart.updateBarChart(selected_id, selected_year);
+          updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+          updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+          updateBarChart(svgBarChartArea,selected_id, selected_year);
           var idname = "F" + (selected_year+2001);
           //update info
           var info = d3.select("#info");
-          info.select("#number").text(formatLong(layer.feature.properties[idname]));
-          /*
-          info.select("#number").transition().duration(200)
+          //info.select("#number").text(formatLong(layer.feature.properties[idname]));
+
+          info.select("#number").transition().duration(500)
             .tween("text", function(){
               var i = d3.interpolateRound(+this.textContent, layer.feature.properties[idname]);
               return function(t) {
                 this.textContent = i(t);
               }
             });
-            */
+
+        }
+        if (old) {
+            topoAdm1.resetStyle(old);
         }
         layer.setStyle({
           fillColor: 'rgba(145,145,145,0.2)',
-          weight: 0.3,
+          weight: 0.5,
         })
+        old = layer;
         map.fitBounds(layer.getBounds());
         //update info
         var info = d3.select("#info");
@@ -377,15 +428,18 @@ var createMap = function(){
     }
 
     function hover(e) {
+/*
         var layer = e.target;
         layer.setStyle({
           fillColor: 'rgba(145,145,145,0.2)',
         });
+        */
     }
     function reset(e) {
+      /*
       var layer = e.target;
       topoAdm1.resetStyle(layer);
-    }
+    */}
 
 });
 }
@@ -393,8 +447,8 @@ var createMap = function(){
 var createTrendChart = function(){
 
   //Trend chart variables
-  var width = 550, height = 250;
-  var margins = {top: 15, right: 20, bottom: 40, left: 50};
+  var width = 600, height = 200;
+  var margins = {top: 15, right: 20, bottom: 40, left: 100};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
   var years = [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016];
@@ -404,11 +458,11 @@ var createTrendChart = function(){
                   .attr("height", height);
   var chart = svgChartArea.append("g")
                 .attr("transform","translate("+margins.left + "," + margins.top + ")");
-  var dataset = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  var dataset = [2400,23394,8431,14946,5719,30210,2941,1480,15453,443,6099,6076,3670,13401,30162,972];
   //Scales
   var xScale = d3.scale.ordinal()
                 .domain(d3.range(2001,2017))
-                .rangeRoundBands([0,chartwidth],0.3);
+                .rangeRoundBands([0,chartwidth],0.4);
   var yScale = d3.scale.linear()
                 .domain([0, 30000])
                 .range([chartheight, 0]);
@@ -438,26 +492,33 @@ var createTrendChart = function(){
       .attr("height", function(d){
         return chartheight - yScale(d);
       })
+      .attr("class", function(d,i){
+        if (i == 14) {
+          return "selected";
+        }
+      })
       .on("mouseover", function(d,i){
         d3.selectAll("rect").classed("selected", false);
         d3.select(this).attr("class", "selected");
         selected_year = i;
-        pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
-        pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
-        barChart.updateBarChart(selected_id, selected_year);
+        updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+        updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+        updateBarChart(svgBarChartArea,selected_id, selected_year);
         //update info
         var info = d3.select("#info");
-        info.select("#number").text(formatLong(d));
-        /*
-        info.select("#number").transition().duration(200)
+        //console.log(d);
+        //info.select("#number").text(formatLong(d));
+
+        info.select("#number").transition().duration(500)
           .tween("text", function(){
             var i = d3.interpolateRound(+this.textContent, d);
             return function(t) {
               this.textContent = i(t);
             }
           });
-        */
-        info.select("#year").text("Fire Alerts in " + (i+2001));
+
+        info.select("#year").text(i+2001);
+
       });
     chart.append("g")
         .attr("class", "x axis")
@@ -470,6 +531,7 @@ var createTrendChart = function(){
 
   drawChart.updateTrendChart = function(selected_data){
     //var test = d3.values(selected_data); More efficient?
+
     dataset = [selected_data.properties.F2001,selected_data.properties.F2002,selected_data.properties.F2003,selected_data.properties.F2004,selected_data.properties.F2005,selected_data.properties.F2006,selected_data.properties.F2007,selected_data.properties.F2008,selected_data.properties.F2009,selected_data.properties.F2010,selected_data.properties.F2011,selected_data.properties.F2012,selected_data.properties.F2013,selected_data.properties.F2014,selected_data.properties.F2015,selected_data.properties.F2016];
 
     //yScale.domain([0, d3.max(dataset)])
@@ -502,8 +564,9 @@ var createTrendChart = function(){
 var formatLong = d3.format(",d");
 //Tables and variables for pie charts
 var mockdataset = [0,50];
-var selected_id, selected_year;
-var pie_w = 150, pie_h = 150;
+var selected_id = 15;
+var selected_year = 14;
+var pie_w = 140, pie_h = 140;
 //var pie_margins = {top: 10, right: 10, bottom: 0, left: 10};
 var pie = d3.layout.pie().sort(null);
 var color1 = ["#1B5E48","#B6BFBC"];
@@ -522,6 +585,38 @@ var svgPie2 = d3.select("#pieDiv2")
                 .append("svg")
                 .attr("width", pie_w)
                 .attr("height", pie_h);
+
+                var updatePie = function(pie_object,adm_id,year_id,attr1,attr2) {
+                 var selectedTableYear = tables[year_id];
+                 var selectedRowAdm = selectedTableYear[adm_id-1];
+                 var selectedAttributes = [+selectedRowAdm[attr1], +selectedRowAdm[attr2]];
+                 var tot = d3.sum(selectedAttributes);
+                 var percentages = [(selectedAttributes[0]/tot)*100, (selectedAttributes[1]/tot)*100];
+
+                 function arcTween(a) {
+                   var i = d3.interpolate(this._current, a);
+                   this._current = i(0);
+                   return function(t) {
+                     return arc(i(t));
+                   };
+                 }
+
+                 pie_object.selectAll("g.arc")
+                   .data(pie(percentages)).select("text").transition().duration(750)
+                   .attr("transform", function(d) {
+                     return "translate(" + arc.centroid(d) + ")";
+                   })
+                   .attr("text-anchor", "middle")
+                   .tween("text", function(d) {
+                         var i = d3.interpolateRound(+this.textContent.replace('%', ''), d.value);
+                         return function(t) {
+                           this.textContent = i(t) + '%';
+                         };
+                       });
+                   pie_object.selectAll("g.arc")
+                   .data(pie(selectedAttributes)).select("path").transition().duration(750)
+                   .attrTween("d", arcTween);
+                }
 
 var createPies = function(){
 
@@ -543,49 +638,69 @@ var createPies = function(){
 
    }
 
-   drawPie.updatePie = function(pie_object,adm_id,year_id,attr1,attr2) {
-    var selectedTableYear = tables[year_id];
-    var selectedRowAdm = selectedTableYear[adm_id-1];
-    var selectedAttributes = [+selectedRowAdm[attr1], +selectedRowAdm[attr2]];
-    var tot = d3.sum(selectedAttributes);
-    var percentages = [(selectedAttributes[0]/tot)*100, (selectedAttributes[1]/tot)*100];
 
-    function arcTween(a) {
-      var i = d3.interpolate(this._current, a);
-      this._current = i(0);
-      return function(t) {
-        return arc(i(t));
-      };
-    }
-
-    pie_object.selectAll("g.arc")
-      .data(pie(percentages)).select("text").transition().duration(750)
-      .attr("transform", function(d) {
-        return "translate(" + arc.centroid(d) + ")";
-      })
-      .attr("text-anchor", "middle")
-      .tween("text", function(d) {
-            var i = d3.interpolateRound(+this.textContent.replace('%', ''), d.value);
-            return function(t) {
-              this.textContent = i(t) + '%';
-            };
-          });
-      pie_object.selectAll("g.arc")
-      .data(pie(selectedAttributes)).select("path").transition().duration(750)
-      .attrTween("d", arcTween);
-  }
 
   drawPie(svgPie1, color1);
-  drawPie(svgPie2, color2)
+  drawPie(svgPie2, color2);
+
   return drawPie;
 
 }
 
-var createBarChart = function(){
+var updateBarChart = function(bar_object,adm_id,year_id){
+  var selectedTableYear = tables[year_id];
+  var selectedRowAdm = selectedTableYear[adm_id-1];
+  var selected_dataset = [+selectedRowAdm.Logging, +selectedRowAdm.OilPalm, +selectedRowAdm.WoodFiber, +selectedRowAdm.OutCon]
+  var total = d3.sum(selected_dataset);
+  var perc = [(selected_dataset[0]/total)*100,(selected_dataset[1]/total)*100,(selected_dataset[2]/total)*100,(selected_dataset[3]/total)*100];
+  //console.log(perc);
+
+  //xScale.domain([0, d3.max(selected_dataset)]).ticks(8);
+  bar_object.selectAll("rect")
+    .data(perc)
+    .transition()
+    .duration(750)
+    .attr("x", function(d, i){
+      return xScale(0);
+    })
+    .attr("y", function(d,i){
+      var x = categories[i];
+      return yScale(x);
+    })
+    .attr("width", function(d){
+        return xScale(d);
+      })
+    .attr("height", yScale.rangeBand());
+
+  bar_object.selectAll("text")
+    .data(perc)
+    .transition().duration(750)
+    .attr("x", function(d, i){
+      return xScale(d);
+    })
+    .attr("y", function(d,i){
+      var x = categories[i];
+      return yScale(x) + 12;
+    })
+    .tween("text", function(d) {
+          var perc = d;
+          var i = d3.interpolateRound(+this.textContent.replace('%', ''), perc);
+          return function(t) {
+            this.textContent = i(t) + '%';
+          };
+        });
+
+
+  //Update X axis
+  bar_object.select(".x.axis")
+      .transition()
+      .duration(750)
+      .call(xAxis);
+  };
 
   //Trend chart variables
-  var width = 250, height = 150;
-  var margins = {top: 10, right: 20, bottom: 20, left: 60};
+  var width = 260, height = 140;
+  var margins = {top: 10, right: 40, bottom: 20, left: 60};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
   var svgBarChartArea = d3.select("#barChart")
@@ -640,6 +755,9 @@ var createBarChart = function(){
           });
         }
 
+
+var createBarChart = function(){
+
   //Create bar chart
   var drawChart = function(){
     barChart.selectAll("rect")
@@ -686,56 +804,7 @@ var createBarChart = function(){
         .call(wrap, yScale.rangeBand());
     };
 
-  drawChart.updateBarChart = function(adm_id, year_id){
-    var selectedTableYear = tables[year_id];
-    var selectedRowAdm = selectedTableYear[adm_id-1];
-    var selected_dataset = [+selectedRowAdm.Logging, +selectedRowAdm.OilPalm, +selectedRowAdm.WoodFiber, +selectedRowAdm.OutCon]
-    var total = d3.sum(selected_dataset);
-    var perc = [(selected_dataset[0]/total)*100,(selected_dataset[1]/total)*100,(selected_dataset[2]/total)*100,(selected_dataset[3]/total)*100];
-    console.log(perc);
 
-    //xScale.domain([0, d3.max(selected_dataset)]).ticks(8);
-    barChart.selectAll("rect")
-      .data(perc)
-      .transition()
-      .duration(750)
-      .attr("x", function(d, i){
-        return xScale(0);
-      })
-      .attr("y", function(d,i){
-        var x = categories[i];
-        return yScale(x);
-      })
-      .attr("width", function(d){
-          return xScale(d);
-        })
-      .attr("height", yScale.rangeBand());
-
-    barChart.selectAll("text")
-      .data(perc)
-      .transition().duration(750)
-      .attr("x", function(d, i){
-        return xScale(d);
-      })
-      .attr("y", function(d,i){
-        var x = categories[i];
-        return yScale(x) + 12;
-      })
-      .tween("text", function(d) {
-            var perc = d;
-            var i = d3.interpolateRound(+this.textContent.replace('%', ''), perc);
-            return function(t) {
-              this.textContent = i(t) + '%';
-            };
-          });
-
-
-    //Update X axis
-    barChart.select(".x.axis")
-        .transition()
-        .duration(750)
-        .call(xAxis);
-    };
   drawChart();
   return drawChart;
 }
@@ -743,11 +812,13 @@ var createBarChart = function(){
 
 
 loadTables();
-//console.log(tables);
+
 createMap();
 var trendChart = createTrendChart();
 var pies = createPies();
 var barChart = createBarChart();
+
+
 
 
 </script>

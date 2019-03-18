@@ -143,13 +143,13 @@ h5{
 #mapDiv {
   margin: auto;
   width: 550px;
-  height: 215px;
+  height: 250px;
   border: 1px dashed darkgray;
 }
 
 #chartDiv {
   margin: auto;
-  width: 640px;
+  width: 650px;
 }
 
 #pieDiv1 path {
@@ -173,7 +173,7 @@ h5{
 #dashboard{
   overflow: hidden;
   margin: auto;
-  width: 640px;
+  width: 650px;
 }
 #left{
   width: 550px;
@@ -182,21 +182,15 @@ h5{
 #right{
   overflow: hidden;
   margin: auto;
-  width: 570px;
+  width: 450px;
 }
-#right div {
+#right div{
     display: inline-block;
 }
 #right svg {
   margin: auto;
 }
-#pieDiv1 {
-  float: right;
-}
 #pieDiv2 {
-  float: left;
-}
-#pieDiv1 {
   float: right;
 }
 .indent {
@@ -207,6 +201,8 @@ h5{
   width: 450px;
   font-family: "Firas";
 }
+
+
   </style>
 </head>
 <body>
@@ -234,22 +230,51 @@ h5{
   </script>
 
 <div id="dashboard">
+    <h2>Indonesia's Fire History Provides Insights to Prevent Future Fires</h2>
+    <p>For decades, forest and land fires in Indonesia have become an annual environmental crisis, but the dry conditions brought by the 2015 El Niño made last year's fire season the worst in twenty years: approximately 2.6 millions hectares of land were burned between June and October. The fires, many burning on carbon-rich peatlands, exposed millions of people across Southeast Asia to toxic haze and tripled Indonesia's annual greenhouse gas emissions. This year we have not seen nearly as many fires because of wetter conditions, but the root of the problem still needs to be addressed.
+    </p>
+    <p>Nearly all fires in Indonesia are human-caused. Fires are typically set to clear land for agriculture, but also during land conflicts. While weather conditions dictate when fires can burn – Indonesia typically experiences two annual dry seasons, human actions determine where fires occur each year, with the highest concentration of fires occurring in areas with the greatest amount of forest conversion to agriculture and where land claims are at odds with local communities. While the incentives to burn are threats to forests all across the country, fires are likely to continue happening in regions with a long history of land conversion and conflicts – where land-owners might seek to expand their plantations – as well as in regions with a recent spike in fires – where the new frontiers of burning have been set.
+    </p>
+    <p>Analyzing the past 15 years of fire data can help guide fire prevention efforts - like companies' no-burn commitments, government land use and restoration strategies, or village-level fire prevention programs - to the areas of greatest need.
+    </p>
+    <p>To address the need for historical insights, GFW fires has developed a series of data layers that show the yearly concentration of fire alerts detected by NASA's MODIS satellites. In the map below, hotter/redder areas symbolize a high concentration of fire alerts, while bluer/colder areas signal a lower occurrence of fires.
+    </p>
+    <div id="mapDiv"></div>
+    <p>The fires in 2015 were densely concentrated in South Sumatra and Central Kalimantan, which are also the provinces with the highest amount of fires over the past 15 years. The graph below charts the continuing occurrence of fire alerts in Central Kalimantan (more than 30,000 alerts in 2006 and 2015). Click on any other province in the map to view the trend for that province. South Sumatra also shows a long history of fire activity, though not as high in intensity as Kalimantan.
+    </p>
     <div id="info">
       <h3><span id="number">30162</span> Fire Alerts in <span style="font-weight:bold" id="place">Kalimantan Tengah</span>, <span id="year">2015</span></h3>
     </div>
-    <div id="mapDiv"></div>
     <div id="chartDiv"></div>
+      <div id="pieDiv2">
+        <h4>Fire Alerts on <span style="color:#1B455E; font-weight:bold;">Peatland</span></h4>
+      </div>
+    <p>
+      What is driving the high frequency of fires in these two provinces? To begin with, they share a high concentration of flammable peatlands, which will not burn unless drained first, confirming the link between fires and agricultural expansion. In 2015, over 60% of fires in Central Kalimantan and South Sumatra were located in peatlands. The following graphs add contextual information as to where the fires took place on a particular year, and they can be updated by hovering over a different year in the bar chart and clicking on a different province in the map.
+    </p>
+    <p>When looking at what commodities are driving the fires, the answer varies across different provinces. Every year since 2001, the majority of alerts detected in this province were located inside oil palm plantations. In South Sumatra, the key commodities driving fires are pulpwood and wood fiber. Up to 50% of fire alerts from 2015 fell inside wood fiber concession areas.
+    </p>
   <div id="right">
-    <div id="pieDiv2">
-      <h4>Fire Alerts on <span style="color:#1B455E; font-weight:bold;">Peatland</span></h4>
+    <div id="pieDiv1">
+      <h4>Fire Alerts in <span style="color:#1B5E48; font-weight:bold;">Protected Areas</span></h4>
     </div>
     <div id="barChart">
       <h4>Fires Alerts by Land Use Area</h4>
     </div>
-    <div id="pieDiv1">
-      <h4>Fire Alerts in <span style="color:#1B5E48; font-weight:bold;">Protected Areas</span></h4>
-    </div>
   </div>
+  <p>What is happening in other provinces? Although fires in Riau are decreasing, the fire alert count for 2016 is relatively high for a wet year, and almost half of these fire alerts were located inside wood fiber concessions. A new emerging fire hotspot is Papua, where illegal burning is starting to set off in relatively untouched forests. The high percentage of fire alerts detected inside protected areas in this province - more than 35% every year since 2001- is a big cause for concern.
+  </p>
+  <p>What efforts could be targeted to Kalimantan, Sumatra, Riau and Papua to prevent yet another fire crisis in Indonesia?
+  </p>
+  <p class="indent">1. No-burn and zero-deforestation commitments should be prioritized in provinces with chronic fires, where the clearing of forests and peatlands for agricultural expansion needs to be contained. Moreover, companies that have already announced such commitments need to deliver not only within their concession boundaries, but also develop strategies to ensure this commitment is followed across their entire supply chains.
+  </p>
+  <p class="indent">2. Provinces with intense recent burning, such as Papua, should be monitored closely. The new commitment to strengthen Indonesia's moratorium by including peatlands will be crucial to prevent fires in relatively unexploited forests.
+  </p>
+  <p class="indent">3. Provinces with a long history of burning should also be the main focus of the Peatland Restoration Agency, a new government-led effort to restore the hydrology of peatlands. The recent amendment to the moratorium also demands that companies restore peatlands they have drained in the past.
+  </p>
+  <p class="indent">4. More granular analysis of fires in Sumatra and Kalimantan is needed to help decide where to up-scale village-level initiatives, such as the work of the Fire Free Alliance Village. The Alliance has been working primarily in Riau patrolling, water management and fire prevention programs in specific villages in Riau.
+  </p>
+</div>
 
 <script>
 
@@ -369,6 +394,7 @@ var createMap = function(){
     }
 
     var topoAdm1Data = topojson.feature(json, json.objects.IndonesiaFires);
+    console.log(topoAdm1Data.features[14]);
     init = topoAdm1Data.features[14];
     topoAdm1 = new L.TopoJSON(topoAdm1Data, {style:style});
 //  init = topoAdm1._layers[737].feature;
@@ -447,7 +473,7 @@ var createMap = function(){
 var createTrendChart = function(){
 
   //Trend chart variables
-  var width = 600, height = 200;
+  var width = 600, height = 250;
   var margins = {top: 15, right: 20, bottom: 40, left: 100};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
@@ -458,7 +484,7 @@ var createTrendChart = function(){
                   .attr("height", height);
   var chart = svgChartArea.append("g")
                 .attr("transform","translate("+margins.left + "," + margins.top + ")");
-  var dataset = [2400,23394,8431,14946,5719,30210,2941,1480,15453,443,6099,6076,3670,13401,30162,972];
+  var dataset = [2400,23394,8431,14946,5719,30210,2941,1480,15453,443,6099,6076,3670,13401,30162,582];
   //Scales
   var xScale = d3.scale.ordinal()
                 .domain(d3.range(2001,2017))
@@ -506,7 +532,7 @@ var createTrendChart = function(){
         updateBarChart(svgBarChartArea,selected_id, selected_year);
         //update info
         var info = d3.select("#info");
-        //console.log(d);
+        console.log(d);
         //info.select("#number").text(formatLong(d));
 
         info.select("#number").transition().duration(500)
@@ -518,7 +544,6 @@ var createTrendChart = function(){
           });
 
         info.select("#year").text(i+2001);
-
       });
     chart.append("g")
         .attr("class", "x axis")
@@ -531,7 +556,7 @@ var createTrendChart = function(){
 
   drawChart.updateTrendChart = function(selected_data){
     //var test = d3.values(selected_data); More efficient?
-
+    console.log(selected_data)
     dataset = [selected_data.properties.F2001,selected_data.properties.F2002,selected_data.properties.F2003,selected_data.properties.F2004,selected_data.properties.F2005,selected_data.properties.F2006,selected_data.properties.F2007,selected_data.properties.F2008,selected_data.properties.F2009,selected_data.properties.F2010,selected_data.properties.F2011,selected_data.properties.F2012,selected_data.properties.F2013,selected_data.properties.F2014,selected_data.properties.F2015,selected_data.properties.F2016];
 
     //yScale.domain([0, d3.max(dataset)])
@@ -566,7 +591,7 @@ var formatLong = d3.format(",d");
 var mockdataset = [0,50];
 var selected_id = 15;
 var selected_year = 14;
-var pie_w = 140, pie_h = 140;
+var pie_w = 150, pie_h = 150;
 //var pie_margins = {top: 10, right: 10, bottom: 0, left: 10};
 var pie = d3.layout.pie().sort(null);
 var color1 = ["#1B5E48","#B6BFBC"];
@@ -653,7 +678,7 @@ var updateBarChart = function(bar_object,adm_id,year_id){
   var selected_dataset = [+selectedRowAdm.Logging, +selectedRowAdm.OilPalm, +selectedRowAdm.WoodFiber, +selectedRowAdm.OutCon]
   var total = d3.sum(selected_dataset);
   var perc = [(selected_dataset[0]/total)*100,(selected_dataset[1]/total)*100,(selected_dataset[2]/total)*100,(selected_dataset[3]/total)*100];
-  //console.log(perc);
+  console.log(perc);
 
   //xScale.domain([0, d3.max(selected_dataset)]).ticks(8);
   bar_object.selectAll("rect")
@@ -699,7 +724,7 @@ var updateBarChart = function(bar_object,adm_id,year_id){
   };
 
   //Trend chart variables
-  var width = 260, height = 140;
+  var width = 270, height = 150;
   var margins = {top: 10, right: 40, bottom: 20, left: 60};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
@@ -812,7 +837,7 @@ var createBarChart = function(){
 
 
 loadTables();
-
+//console.log(tables);
 createMap();
 var trendChart = createTrendChart();
 var pies = createPies();
