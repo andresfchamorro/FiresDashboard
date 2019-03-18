@@ -1,0 +1,77 @@
+<!DOCTYPE html >
+<html lang="en">
+  <head>
+    <title>I need a forest fire </title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://npmcdn.com/leaflet@0.7.7/dist/leaflet.css" />
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://npmcdn.com/leaflet@0.7.7/dist/leaflet.js"></script>
+    <script src="Leaflet.heat/dist/leaflet-heat.js"></script>
+  </head>
+
+<body>
+  <div id="map-canvas" style="width: 1000px; height: 600px"></div>
+
+  <script type="text/javascript">
+
+/*My Data
+    var testData = [
+      [24.6408,46.7728],[22.6408,46.7148],[21.6408,46.3728],[50.75,-1.55],[24.2408,36.7728]
+    ];
+*/
+
+//Dope Basemap
+    var baseLayer = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/dark-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYWNoYW1vcnJvIiwiYSI6ImNpcnFub3NuOTBodGtmZ204M2R2MmZobDIifQ.-eJXpRA44j_7MPBXg3z90A', {
+      attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+      maxZoom: 15,
+      id: 'mapbox.achamorro'
+    });
+
+//Conditions for heatmap
+    var options = {
+      // radius should be small ONLY if scaleRadius is true (or small radius is intended)
+      // if scaleRadius is false it will be the constant radius used in pixels
+      "radius": 10,
+      "minOpacity": 0.3,
+      "blur": 18,
+      "max": 1,
+      "gradient": {0.3:'#2b83ba',0.6: '#fdae61', 1:'#d7191c'},
+    };
+
+    var mymap = new L.Map('map-canvas', {
+      center: new L.LatLng(-0.7893, 113.9213),
+      zoom: 4,
+      layers: [baseLayer]
+    });
+
+    var dataset = [];
+
+    d3.csv("http://gfw2-data.s3.amazonaws.com/test/D3/IDN2015.csv", function(error, data){
+      if (error) {
+        console.log(error);}
+      else {
+        data.forEach(function(d){
+          var array = [];
+          array[0] = +d.latitude;
+          array[1] = +d.longitude;
+          dataset.push(array);
+        })
+        console.log(dataset);
+        var heatmapLayer = new L.heatLayer(dataset,options).addTo(mymap);
+      }
+    });
+
+
+
+
+
+/*
+    var mymap = L.map('map-canvas').setView([-4.681062, 118.281979], 6);
+    baseLayer.addTo(mymap);
+*/
+
+
+  </script>
+
+</body>
+</html>
