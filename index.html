@@ -11,12 +11,12 @@
   <style>
 @font-face {
     font-family: "Arial MT Std";
-    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-LightCond.otf) format("opentype");
+    src: url(https://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-LightCond.otf) format("opentype");
     font-weight: normal;
 }
 @font-face {
     font-family: "Arial MT Std";
-    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-BoldCond.otf) format("opentype");
+    src: url(https://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-BoldCond.otf) format("opentype");
     font-weight: bold;
 }
 body {
@@ -272,17 +272,17 @@ var createMap = function(){
 
 //Variables
   var active = d3.select("null");
-  mapLink = '<a href="http://52.200.102.67/osm_tiles"></a>';
+  mapLink = '<a href="https://52.200.102.67/osm_tiles"></a>';
 
 //Layers
   var gray = L.esri.basemapLayer("Gray",{opacity: 0.5});
   var kd2015 = L.tileLayer(
-          'http://wri-tiles.s3.amazonaws.com/fires_idn/2015/{z}/{x}/{y}.png', {
+          'https://wri-tiles.s3.amazonaws.com/fires_idn/2015/{z}/{x}/{y}.png', {
           attribution: '&copy; ' + mapLink + ' Contributors',
           maxZoom: 22,
           });
   var kdAllYears = L.tileLayer(
-          'http://wri-tiles.s3.amazonaws.com/fires_idn/all/{z}/{x}/{y}.png', {
+          'https://wri-tiles.s3.amazonaws.com/fires_idn/all/{z}/{x}/{y}.png', {
           attribution: '&copy; ' + mapLink + ' Contributors',
           maxZoom: 22,
         });
