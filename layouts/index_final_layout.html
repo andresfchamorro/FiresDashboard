@@ -2,24 +2,26 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <link
-      rel="stylesheet"
-      href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+  <script src="https://d3js.org/topojson.v1.min.js"></script>
+  <script src="https://d3js.org/d3-tile.v0.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/leaflet.esri/1.0.4/esri-leaflet.js"></script>
   <style>
 @font-face {
     font-family: "Arial MT Std";
-    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-LightCond.otf) format("opentype");
+    src: url(https://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-LightCond.otf) format("opentype");
     font-weight: normal;
 }
 @font-face {
     font-family: "Arial MT Std";
-    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-BoldCond.otf) format("opentype");
+    src: url(https://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/ArialMTStd-BoldCond.otf) format("opentype");
     font-weight: bold;
 }
 @font-face {
     font-family: "Firas";
-    src: url(http://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/FiraSans-Regular.otf) format("opentype");
+    src: url(https://gfw2-data.s3.amazonaws.com/fires/d3/Dashboard/FiraSans-Regular.otf) format("opentype");
     font-weight: normal;
 }
 body {
@@ -235,7 +237,13 @@ h5{
 
 <div id="dashboard">
     <div id="info">
-      <h3><span id="number">30162</span> Fire Alerts in <span style="font-weight:bold" id="place">Kalimantan Tengah</span>, <span id="year">2015</span></h3>
+      <h3>
+        <span id="number">30162</span>
+        Fire Alerts in
+        <span style="font-weight:bold" id="place">Kalimantan Tengah</span>
+        ,
+        <span id="year">2015</span>
+      </h3>
     </div>
     <div id="mapDiv"></div>
     <div id="chartDiv"></div>
@@ -317,17 +325,17 @@ var createMap = function(){
 
 //Variables
   var active = d3.select("null");
-  mapLink = '<a href="http://52.200.102.67/osm_tiles"></a>';
+  mapLink = '<a href="https://52.200.102.67/osm_tiles"></a>';
 
 //Layers
   var gray = L.esri.basemapLayer("Gray",{opacity: 0.5});
   var kd2015 = L.tileLayer(
-          'http://wri-tiles.s3.amazonaws.com/fires_idn/2015/{z}/{x}/{y}.png', {
+          'https://wri-tiles.s3.amazonaws.com/fires_idn/2015/{z}/{x}/{y}.png', {
           attribution: '&copy; ' + mapLink + ' Contributors',
           maxZoom: 22,
           });
   var kdAllYears = L.tileLayer(
-          'http://wri-tiles.s3.amazonaws.com/fires_idn/all/{z}/{x}/{y}.png', {
+          'https://wri-tiles.s3.amazonaws.com/fires_idn/all/{z}/{x}/{y}.png', {
           attribution: '&copy; ' + mapLink + ' Contributors',
           maxZoom: 22,
         });
@@ -356,7 +364,7 @@ var createMap = function(){
   };
   legend.addTo(map);
 
-  d3.json("toposim-IndonesiaFires3.json", function(json){
+  d3.json("Tables/toposim-IndonesiaFires3.json", function(json){
 
     function style(feature) {
       return {

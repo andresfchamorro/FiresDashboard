@@ -161,9 +161,6 @@ h4{
   display: block;
   margin: auto;
 }
-
-
-
   </style>
 </head>
 <body>
@@ -194,12 +191,12 @@ h4{
   </div>
   <div id="right">
     <div id="info">
-      <h1 id="place"></h1>
+      <h1 id="place">Kalimantan Tengah</h1>
       <div id="info2">
-        <h2 id="number"><h2>
+        <h2 id="number">30162<h2>
       </div>
       <div id="info3">
-        <h2 id="year"></h2>
+        <h2 id="year">Fire Alerts in 2015</h2>
       </div>
     </div>
     <div id="pieDiv1">
@@ -250,6 +247,9 @@ var loadTables = function(){
                                   tables.push(data14);
                                     d3.csv("Tables/Adm1_2016.csv", function(error, data15) {
                                       tables.push(data15);
+                                      updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+                                      updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+                                      updateBarChart(svgBarChartArea,selected_id,selected_year);
       });
       });
       });
@@ -267,6 +267,9 @@ var loadTables = function(){
       });
       });
 }
+
+var topoAdm1;
+var init;
 
 var createMap = function(){
 
@@ -324,10 +327,11 @@ var createMap = function(){
     }
 
     var topoAdm1Data = topojson.feature(json, json.objects.IndonesiaFires);
+    init = topoAdm1Data.features[14];
     var topoAdm1 = new L.TopoJSON(topoAdm1Data, {style:style});
+
     topoAdm1.addTo(map);
     topoAdm1.eachLayer(handleLayer);
-
 
     function handleLayer(layer){
 
@@ -336,9 +340,11 @@ var createMap = function(){
       layer.on({
         click : clicked,
         mouseover: hover,
-        mouseout: reset
+        //mouseout: reset
       });
     }
+
+    var old;
 
     function clicked(e) {
         //Change bar chart and also selected adm1 id
@@ -346,27 +352,30 @@ var createMap = function(){
         trendChart.updateTrendChart(layer.feature);
         selected_id = layer.feature.properties.ID;
         if (selected_year) {
-          pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
-          pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
-          barChart.updateBarChart(selected_id, selected_year);
+          updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+          updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+          updateBarChart(svgBarChartArea,selected_id, selected_year);
           var idname = "F" + (selected_year+2001);
           //update info
           var info = d3.select("#info");
-          info.select("#number").text(formatLong(layer.feature.properties[idname]));
-          /*
-          info.select("#number").transition().duration(200)
+          //info.select("#number").text(formatLong(layer.feature.properties[idname]));
+          info.select("#number").transition().duration(500)
             .tween("text", function(){
               var i = d3.interpolateRound(+this.textContent, layer.feature.properties[idname]);
               return function(t) {
                 this.textContent = i(t);
               }
             });
-            */
+
+        }
+        if (old) {
+            topoAdm1.resetStyle(old);
         }
         layer.setStyle({
           fillColor: 'rgba(145,145,145,0.2)',
-          weight: 0.3,
+          weight: 0.5,
         })
+        old = layer;
         map.fitBounds(layer.getBounds());
         //update info
         var info = d3.select("#info");
@@ -380,8 +389,8 @@ var createMap = function(){
         });
     }
     function reset(e) {
-      var layer = e.target;
-      topoAdm1.resetStyle(layer);
+      // var layer = e.target;
+      // topoAdm1.resetStyle(layer);
     }
 
 });
@@ -401,7 +410,7 @@ var createTrendChart = function(){
                   .attr("height", height);
   var chart = svgChartArea.append("g")
                 .attr("transform","translate("+margins.left + "," + margins.top + ")");
-  var dataset = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  var dataset = [2400,23394,8431,14946,5719,30210,2941,1480,15453,443,6099,6076,3670,13401,30162,972];
   //Scales
   var xScale = d3.scale.ordinal()
                 .domain(d3.range(2001,2017))
@@ -435,25 +444,29 @@ var createTrendChart = function(){
       .attr("height", function(d){
         return chartheight - yScale(d);
       })
+      .attr("class", function(d,i){
+        if (i == 14) {
+          return "selected";
+        }
+      })
       .on("mouseover", function(d,i){
         d3.selectAll("rect").classed("selected", false);
         d3.select(this).attr("class", "selected");
         selected_year = i;
-        pies.updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
-        pies.updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
-        barChart.updateBarChart(selected_id, selected_year);
+        updatePie(svgPie1,selected_id,selected_year,"Protected","OutProtected");
+        updatePie(svgPie2,selected_id,selected_year,"Peat","OutPeat");
+        updateBarChart(svgBarChartArea,selected_id, selected_year);
         //update info
         var info = d3.select("#info");
-        info.select("#number").text(formatLong(d));
-        /*
-        info.select("#number").transition().duration(200)
+        // info.select("#number").text(formatLong(d));
+        info.select("#number").transition().duration(500)
           .tween("text", function(){
             var i = d3.interpolateRound(+this.textContent, d);
             return function(t) {
               this.textContent = i(t);
             }
           });
-        */
+
         info.select("#year").text("Fire Alerts in " + (i+2001));
       });
     chart.append("g")
@@ -499,7 +512,8 @@ var createTrendChart = function(){
 var formatLong = d3.format(",d");
 //Tables and variables for pie charts
 var mockdataset = [0,50];
-var selected_id, selected_year;
+var selected_id = 15;
+var selected_year = 14;
 var pie_w = 150, pie_h = 150;
 //var pie_margins = {top: 10, right: 10, bottom: 0, left: 10};
 var pie = d3.layout.pie().sort(null);
@@ -519,6 +533,38 @@ var svgPie2 = d3.select("#pieDiv2")
                 .append("svg")
                 .attr("width", pie_w)
                 .attr("height", pie_h);
+
+                var updatePie = function(pie_object,adm_id,year_id,attr1,attr2) {
+                 var selectedTableYear = tables[year_id];
+                 var selectedRowAdm = selectedTableYear[adm_id-1];
+                 var selectedAttributes = [+selectedRowAdm[attr1], +selectedRowAdm[attr2]];
+                 var tot = d3.sum(selectedAttributes);
+                 var percentages = [(selectedAttributes[0]/tot)*100, (selectedAttributes[1]/tot)*100];
+
+                 function arcTween(a) {
+                   var i = d3.interpolate(this._current, a);
+                   this._current = i(0);
+                   return function(t) {
+                     return arc(i(t));
+                   };
+                 }
+
+                 pie_object.selectAll("g.arc")
+                   .data(pie(percentages)).select("text").transition().duration(750)
+                   .attr("transform", function(d) {
+                     return "translate(" + arc.centroid(d) + ")";
+                   })
+                   .attr("text-anchor", "middle")
+                   .tween("text", function(d) {
+                         var i = d3.interpolateRound(+this.textContent.replace('%', ''), d.value);
+                         return function(t) {
+                           this.textContent = i(t) + '%';
+                         };
+                       });
+                   pie_object.selectAll("g.arc")
+                   .data(pie(selectedAttributes)).select("path").transition().duration(750)
+                   .attrTween("d", arcTween);
+                }
 
 var createPies = function(){
 
@@ -540,49 +586,69 @@ var createPies = function(){
 
    }
 
-   drawPie.updatePie = function(pie_object,adm_id,year_id,attr1,attr2) {
-    var selectedTableYear = tables[year_id];
-    var selectedRowAdm = selectedTableYear[adm_id-1];
-    var selectedAttributes = [+selectedRowAdm[attr1], +selectedRowAdm[attr2]];
-    var tot = d3.sum(selectedAttributes);
-    var percentages = [(selectedAttributes[0]/tot)*100, (selectedAttributes[1]/tot)*100];
 
-    function arcTween(a) {
-      var i = d3.interpolate(this._current, a);
-      this._current = i(0);
-      return function(t) {
-        return arc(i(t));
-      };
-    }
-
-    pie_object.selectAll("g.arc")
-      .data(pie(percentages)).select("text").transition().duration(750)
-      .attr("transform", function(d) {
-        return "translate(" + arc.centroid(d) + ")";
-      })
-      .attr("text-anchor", "middle")
-      .tween("text", function(d) {
-            var i = d3.interpolateRound(+this.textContent.replace('%', ''), d.value);
-            return function(t) {
-              this.textContent = i(t) + '%';
-            };
-          });
-      pie_object.selectAll("g.arc")
-      .data(pie(selectedAttributes)).select("path").transition().duration(750)
-      .attrTween("d", arcTween);
-  }
 
   drawPie(svgPie1, color1);
-  drawPie(svgPie2, color2)
+  drawPie(svgPie2, color2);
+
   return drawPie;
 
 }
 
-var createBarChart = function(){
+var updateBarChart = function(bar_object,adm_id,year_id){
+  var selectedTableYear = tables[year_id];
+  var selectedRowAdm = selectedTableYear[adm_id-1];
+  var selected_dataset = [+selectedRowAdm.Logging, +selectedRowAdm.OilPalm, +selectedRowAdm.WoodFiber, +selectedRowAdm.OutCon]
+  var total = d3.sum(selected_dataset);
+  var perc = [(selected_dataset[0]/total)*100,(selected_dataset[1]/total)*100,(selected_dataset[2]/total)*100,(selected_dataset[3]/total)*100];
+  //console.log(perc);
+
+  //xScale.domain([0, d3.max(selected_dataset)]).ticks(8);
+  bar_object.selectAll("rect")
+    .data(perc)
+    .transition()
+    .duration(750)
+    .attr("x", function(d, i){
+      return xScale(0);
+    })
+    .attr("y", function(d,i){
+      var x = categories[i];
+      return yScale(x);
+    })
+    .attr("width", function(d){
+        return xScale(d);
+      })
+    .attr("height", yScale.rangeBand());
+
+  bar_object.selectAll("text")
+    .data(perc)
+    .transition().duration(750)
+    .attr("x", function(d, i){
+      return xScale(d);
+    })
+    .attr("y", function(d,i){
+      var x = categories[i];
+      return yScale(x) + 12;
+    })
+    .tween("text", function(d) {
+          var perc = d;
+          var i = d3.interpolateRound(+this.textContent.replace('%', ''), perc);
+          return function(t) {
+            this.textContent = i(t) + '%';
+          };
+        });
+
+
+  //Update X axis
+  bar_object.select(".x.axis")
+      .transition()
+      .duration(750)
+      .call(xAxis);
+  };
 
   //Trend chart variables
-  var width = 250, height = 150;
-  var margins = {top: 10, right: 20, bottom: 20, left: 60};
+  var width = 260, height = 140;
+  var margins = {top: 10, right: 40, bottom: 20, left: 60};
   var chartwidth = width - margins.left - margins.right;
   var chartheight = height - margins.top - margins.bottom;
   var svgBarChartArea = d3.select("#barChart")
@@ -637,6 +703,8 @@ var createBarChart = function(){
           });
         }
 
+var createBarChart = function(){
+
   //Create bar chart
   var drawChart = function(){
     barChart.selectAll("rect")
@@ -683,65 +751,15 @@ var createBarChart = function(){
         .call(wrap, yScale.rangeBand());
     };
 
-  drawChart.updateBarChart = function(adm_id, year_id){
-    var selectedTableYear = tables[year_id];
-    var selectedRowAdm = selectedTableYear[adm_id-1];
-    var selected_dataset = [+selectedRowAdm.Logging, +selectedRowAdm.OilPalm, +selectedRowAdm.WoodFiber, +selectedRowAdm.OutCon]
-    var total = d3.sum(selected_dataset);
-    var perc = [(selected_dataset[0]/total)*100,(selected_dataset[1]/total)*100,(selected_dataset[2]/total)*100,(selected_dataset[3]/total)*100];
-    console.log(perc);
 
-    //xScale.domain([0, d3.max(selected_dataset)]).ticks(8);
-    barChart.selectAll("rect")
-      .data(perc)
-      .transition()
-      .duration(750)
-      .attr("x", function(d, i){
-        return xScale(0);
-      })
-      .attr("y", function(d,i){
-        var x = categories[i];
-        return yScale(x);
-      })
-      .attr("width", function(d){
-          return xScale(d);
-        })
-      .attr("height", yScale.rangeBand());
-
-    barChart.selectAll("text")
-      .data(perc)
-      .transition().duration(750)
-      .attr("x", function(d, i){
-        return xScale(d);
-      })
-      .attr("y", function(d,i){
-        var x = categories[i];
-        return yScale(x) + 12;
-      })
-      .tween("text", function(d) {
-            var perc = d;
-            var i = d3.interpolateRound(+this.textContent.replace('%', ''), perc);
-            return function(t) {
-              this.textContent = i(t) + '%';
-            };
-          });
-
-
-    //Update X axis
-    barChart.select(".x.axis")
-        .transition()
-        .duration(750)
-        .call(xAxis);
-    };
   drawChart();
   return drawChart;
 }
 
 
-
 loadTables();
-//console.log(tables);
 createMap();
+
 var trendChart = createTrendChart();
 var pies = createPies();
 var barChart = createBarChart();
